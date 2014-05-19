@@ -1,7 +1,6 @@
 /****************************************************************************
 **
 **   Copyright (C) 2014 P.L. Lucas
-**   Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 **
 **
 ** LICENSE: BSD
@@ -16,7 +15,7 @@
 **     notice, this list of conditions and the following disclaimer in
 **     the documentation and/or other materials provided with the
 **     distribution.
-**   * Neither the name of developers or companies in the above copyright, Digia Plc and its 
+**   * Neither the name of developers or companies in the above copyright and its 
 **     Subsidiary(-ies) nor the names of its contributors may be used to 
 **     endorse or promote products derived from this software without 
 **     specific prior written permission.
@@ -37,49 +36,23 @@
 **
 ****************************************************************************/
 
-#ifndef MDICHILD_H
-#define MDICHILD_H
+#include <QTextDocument>
+#include <QPlainTextDocumentLayout>
 
-#include <QPlainTextEdit>
-#include <QStringListModel>
-#include "document.h"
-
-class MdiChild : public QPlainTextEdit
+class Document : public QTextDocument
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    MdiChild();
-
-    void newFile();
-    bool loadFile(const QString &fileName);
-    bool save();
-    bool saveAs();
-    bool saveFile(const QString &fileName);
-    QString userFriendlyCurrentFile();
-    QString currentFile() { return _document->fileName(); }
-    void setView(MdiChild *mdiChild);
-    Document *view();
-    void completion();
+	Document(QObject * parent = 0);
+	void setFileName(QString fileName);
+	QString fileName();
 
 signals:
-	void reparentDocument(Document *);
-
-protected:
-    void closeEvent(QCloseEvent *event);
-    void keyPressEvent(QKeyEvent * e);
-
-private slots:
-    void documentWasModified();
-    void documentContentsChanged();
-    void setCurrentFile(QString fileName);
+	void fileNameChanged(QString fileName);
 
 private:
-    bool maybeSave();
-    QString strippedName(const QString &fullFileName);
-    bool isUntitled;
-    bool autoindent;
-    Document *_document;
-};
+	QString _fileName;
+	QPlainTextDocumentLayout *plainTextDocumentLayout;
 
-#endif
+};    

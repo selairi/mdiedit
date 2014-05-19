@@ -1,11 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+**   Copyright (C) 2014 P.L. Lucas
+**   Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 **
-** This file is part of the examples of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:BSD$
+** LICENSE: BSD
 ** You may use this file under the terms of the BSD license as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
@@ -17,9 +16,10 @@
 **     notice, this list of conditions and the following disclaimer in
 **     the documentation and/or other materials provided with the
 **     distribution.
-**   * Neither the name of Digia Plc and its Subsidiary(-ies) nor the names
-**     of its contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
+**   * Neither the name of developers or companies in the above copyright, Digia Plc and its 
+**     Subsidiary(-ies) nor the names of its contributors may be used to 
+**     endorse or promote products derived from this software without 
+**     specific prior written permission.
 **
 **
 ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -34,7 +34,6 @@
 ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
 **
-** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -42,8 +41,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTextDocument>
+
+#include "finddialog.h"
 
 class MdiChild;
+class Document;
 QT_BEGIN_NAMESPACE
 class QAction;
 class QMenu;
@@ -59,6 +62,9 @@ class MainWindow : public QMainWindow
 public:
     MainWindow();
 
+public slots:
+	void open(QString fileName);
+
 protected:
     void closeEvent(QCloseEvent *event);
 
@@ -67,19 +73,36 @@ private slots:
     void open();
     void save();
     void saveAs();
-#ifndef QT_NO_CLIPBOARD
     void cut();
     void copy();
     void paste();
-#endif
+    void selectAll();
+    void undo();
+    void redo();
+    void completion();
+    void find(QString,QTextDocument::FindFlags);
+    void findNext();
+    void replace(QString,QString,QTextDocument::FindFlags);
+    void replaceAll(QString,QString,QTextDocument::FindFlags);
+    void showFindDialog();
+    void goToLine();
+    void wordwrapMode(MdiChild *child = NULL);
+    void showFontDialog();
     void about();
     void updateMenus();
     void updateWindowMenu();
     MdiChild *createMdiChild();
     void switchLayoutDirection();
     void setActiveSubWindow(QWidget *window);
+    void showLineNumber() ;
+    void updateMdiChild(QMdiSubWindow * child);
+    void newView();
+    void saveAll();
+    void minimizeAllSubWindows();
+    void reparentDocument(Document *doc);
 
 private:
+    FindDialog *findDialog;
     void createActions();
     void createMenus();
     void createToolBars();
@@ -88,9 +111,13 @@ private:
     void writeSettings();
     MdiChild *activeMdiChild();
     QMdiSubWindow *findMdiChild(const QString &fileName);
+    void setFont(MdiChild *child = NULL);
+    void putCursorInNotFound(QTextDocument::FindFlags flags);
 
     QMdiArea *mdiArea;
     QSignalMapper *windowMapper;
+    
+    QFont font;
 
     QMenu *fileMenu;
     QMenu *editMenu;
@@ -102,14 +129,26 @@ private:
     QAction *openAct;
     QAction *saveAct;
     QAction *saveAsAct;
+    QAction *saveAllAct;
     QAction *exitAct;
-#ifndef QT_NO_CLIPBOARD
+    
     QAction *cutAct;
     QAction *copyAct;
     QAction *pasteAct;
-#endif
+    QAction *undoAct;
+    QAction *redoAct;
+    QAction *selectAllAct;
+    QAction *completionAct;
+    QAction *findAct;
+    QAction *findNextAct;
+    QAction *goToLineAct;
+    QAction *wordwrapAct;
+    QAction *fontAct;
+    
+    QAction *newViewAct;
     QAction *closeAct;
     QAction *closeAllAct;
+    QAction *minimizeAllAct;
     QAction *tileAct;
     QAction *cascadeAct;
     QAction *nextAct;

@@ -1,11 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+**   Copyright (C) 2014 P.L. Lucas
+**   Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 **
-** This file is part of the examples of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:BSD$
+** LICENSE: BSD
 ** You may use this file under the terms of the BSD license as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
@@ -17,9 +16,10 @@
 **     notice, this list of conditions and the following disclaimer in
 **     the documentation and/or other materials provided with the
 **     distribution.
-**   * Neither the name of Digia Plc and its Subsidiary(-ies) nor the names
-**     of its contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
+**   * Neither the name of developers or companies in the above copyright, Digia Plc and its 
+**     Subsidiary(-ies) nor the names of its contributors may be used to 
+**     endorse or promote products derived from this software without 
+**     specific prior written permission.
 **
 **
 ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -34,20 +34,23 @@
 ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
 **
-** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include <QApplication>
-
 #include "mainwindow.h"
 
-int main(int argc, char *argv[])
-{
-    Q_INIT_RESOURCE(mdi);
-
-    QApplication app(argc, argv);
-    MainWindow mainWin;
-    mainWin.show();
-    return app.exec();
+int main(int argn, char *argv[])
+	{
+	QApplication app(argn, argv);
+	QStringList fileList;
+	for(int i=1;i<argn;i++) {
+		fileList << argv[i];
+	}
+	MainWindow mainWin;
+	mainWin.show();
+	QString file;
+	foreach(file, fileList)
+		mainWin.open(file);
+	return app.exec();
 }

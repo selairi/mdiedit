@@ -1,11 +1,10 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
+**   Copyright (C) 2014 P.L. Lucas
+**   Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 **
-** This file is part of the examples of the Qt Toolkit.
 **
-** $QT_BEGIN_LICENSE:BSD$
+** LICENSE: BSD
 ** You may use this file under the terms of the BSD license as follows:
 **
 ** "Redistribution and use in source and binary forms, with or without
@@ -17,9 +16,10 @@
 **     notice, this list of conditions and the following disclaimer in
 **     the documentation and/or other materials provided with the
 **     distribution.
-**   * Neither the name of Digia Plc and its Subsidiary(-ies) nor the names
-**     of its contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
+**   * Neither the name of developers or companies in the above copyright, Digia Plc and its 
+**     Subsidiary(-ies) nor the names of its contributors may be used to 
+**     endorse or promote products derived from this software without 
+**     specific prior written permission.
 **
 **
 ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -34,11 +34,13 @@
 ** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
 **
-** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include <QtWidgets>
+#include <QFontDialog>
+#include <QInputDialog> 
+#include <QCompleter>
 
 #include "mainwindow.h"
 #include "mdichild.h"
@@ -49,6 +51,8 @@ MainWindow::MainWindow()
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setCentralWidget(mdiArea);
+    connect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)),
+            this, SLOT(updateMdiChild(QMdiSubWindow*)));
     connect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)),
             this, SLOT(updateMenus()));
     windowMapper = new QSignalMapper(this);
@@ -63,8 +67,25 @@ MainWindow::MainWindow()
 
     readSettings();
 
-    setWindowTitle(tr("MDI"));
+    setWindowTitle(tr("MDI Edit"));
     setUnifiedTitleAndToolBarOnMac(true);
+    
+    findDialog = NULL;
+}
+
+void MainWindow::showLineNumber() {
+    if (activeMdiChild()) {
+        int lineno = activeMdiChild()->textCursor().blockNumber();
+        QString str = QString(tr("Line: %1")).arg(++lineno);
+        statusBar()->showMessage(str);
+    }
+}
+
+void MainWindow::updateMdiChild(QMdiSubWindow *) {
+	if(activeMdiChild()) {
+		connect(activeMdiChild(), SIGNAL(cursorPositionChanged()),
+		this, SLOT(showLineNumber()));
+	}
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -85,10 +106,9 @@ void MainWindow::newFile()
     child->show();
 }
 
-void MainWindow::open()
+void MainWindow::open(QString fileName)
 {
-    QString fileName = QFileDialog::getOpenFileName(this);
-    if (!fileName.isEmpty()) {
+	if (!fileName.isEmpty()) {
         QMdiSubWindow *existing = findMdiChild(fileName);
         if (existing) {
             mdiArea->setActiveSubWindow(existing);
@@ -105,6 +125,14 @@ void MainWindow::open()
     }
 }
 
+void MainWindow::open()
+{
+	QStringList fileNames = QFileDialog::getOpenFileNames(this);
+	QString fileName;
+	foreach(fileName, fileNames)
+		open(fileName);
+}
+
 void MainWindow::save()
 {
     if (activeMdiChild() && activeMdiChild()->save())
@@ -117,7 +145,7 @@ void MainWindow::saveAs()
         statusBar()->showMessage(tr("File saved"), 2000);
 }
 
-#ifndef QT_NO_CLIPBOARD
+
 void MainWindow::cut()
 {
     if (activeMdiChild())
@@ -135,13 +163,280 @@ void MainWindow::paste()
     if (activeMdiChild())
         activeMdiChild()->paste();
 }
-#endif
+
+void MainWindow::selectAll()
+{
+    if (activeMdiChild())
+        activeMdiChild()->selectAll();
+}
+
+void MainWindow::undo()
+{
+    if (activeMdiChild())
+        activeMdiChild()->undo();
+}
+
+void MainWindow::redo()
+{
+    if (activeMdiChild())
+        activeMdiChild()->redo();
+}
+
+void MainWindow::completion()
+{
+	if (activeMdiChild()) {
+		QDialog dialog(this);
+		dialog.setWindowTitle(tr("Completer"));
+		QHBoxLayout *layout = new QHBoxLayout(&dialog);
+		dialog.setLayout(layout);
+		
+		QCompleter *completer = new QCompleter(&dialog);
+		QStringListModel *completerWordListModel = new QStringListModel(&dialog);;
+		QStringList completerWordList;
+		
+		QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+		for (int i = 0; i < windows.size(); ++i) {
+			MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+			QString str = child->toPlainText();
+			completerWordList = completerWordList + str.split(QRegExp("\\W"), QString::SkipEmptyParts);
+		}
+		
+		completerWordList.removeDuplicates();
+		completerWordListModel->setStringList(completerWordList);
+		completer->setModel(completerWordListModel);
+		
+		QTextCursor cursor = activeMdiChild()->textCursor();
+		QTextCursor cursorOriginal = activeMdiChild()->textCursor();
+		cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
+		QString text = cursor.selectedText();
+		if(QRegExp("\\w").exactMatch(text)) {
+			cursor = activeMdiChild()->textCursor();
+			cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
+			text = cursor.selectedText();
+			activeMdiChild()->setTextCursor(cursor);
+		} else
+			text = QString();
+		
+		QLineEdit *line = new QLineEdit(&dialog);
+		line->setText(text);
+		line->setCompleter(completer);
+		layout->addWidget(line);
+		connect(line, SIGNAL(returnPressed()), &dialog, SLOT(accept()));
+		int ok = dialog.exec();
+		if(ok == QDialog::Accepted) {
+			activeMdiChild()->insertPlainText(line->text());
+		} else
+			activeMdiChild()->setTextCursor(cursorOriginal);
+		
+		completerWordList.clear();
+		completerWordListModel->setStringList(completerWordList);
+	}
+}
+
+void MainWindow::putCursorInNotFound(QTextDocument::FindFlags flags)
+{
+	if (activeMdiChild()) {
+		if(flags & QTextDocument::FindBackward)
+			activeMdiChild()->moveCursor(QTextCursor::End);
+		else
+			activeMdiChild()->moveCursor(QTextCursor::Start);
+	}
+}
+
+void MainWindow::find(QString str, QTextDocument::FindFlags flags)
+{
+    if (activeMdiChild()) {
+        bool ok = activeMdiChild()->find(str, flags);
+        if(!ok) {
+			QMessageBox msgBox;
+			msgBox.setText(tr("Not found."));
+			msgBox.exec();
+			putCursorInNotFound(flags);
+        }
+    }
+}
+
+void MainWindow::findNext()
+{
+    if (activeMdiChild() && findDialog) {
+        QTextDocument::FindFlags flags = findDialog->findFlags();
+        QString str = findDialog->text();
+        bool ok = activeMdiChild()->find(str, flags);
+        if(!ok) {
+			QMessageBox msgBox;
+			msgBox.setText(tr("Not found."));
+			msgBox.exec();
+			putCursorInNotFound(flags);
+        }
+    }
+}
+
+void MainWindow::showFindDialog()
+{
+	if (activeMdiChild()) {
+		if(findDialog == NULL) {
+			findDialog = new FindDialog(this);
+			connect(findDialog, SIGNAL(find(QString,QTextDocument::FindFlags)), this, SLOT(find(QString,QTextDocument::FindFlags)));
+			connect(findDialog, SIGNAL(replace(QString,QString,QTextDocument::FindFlags)), this, SLOT(replace(QString,QString,QTextDocument::FindFlags)));
+			connect(findDialog, SIGNAL(replaceAll(QString,QString,QTextDocument::FindFlags)), this, SLOT(replaceAll(QString,QString,QTextDocument::FindFlags)));
+		}
+		findDialog->showDialog();
+	}
+}
+
+void MainWindow::setFont(MdiChild *child)
+{
+	if(child==NULL) {
+		QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+		for (int i = 0; i < windows.size(); ++i) {
+			MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+			child->setFont(font);
+		}
+	}
+	else {
+		if(child)
+			child->setFont(font);
+	}
+}
+
+void MainWindow::showFontDialog()
+{
+	bool ok;
+	QFont selectedFont = QFontDialog::getFont(&ok, font, this);
+	if (ok) {
+		font = selectedFont;
+		setFont();
+	}
+}
+
+void MainWindow::replace(QString str, QString replace_str, QTextDocument::FindFlags flags)
+{
+    bool ok = true;
+    if (activeMdiChild()) {
+        if(activeMdiChild()->textCursor().hasSelection()) {
+            if( activeMdiChild()->textCursor().selectedText() == replace_str )
+                 ok = activeMdiChild()->find(str, flags);
+        }
+        else
+             ok = activeMdiChild()->find(str, flags);
+        if(!ok) {
+			QMessageBox msgBox;
+			msgBox.setText(tr("Not found."));
+			msgBox.exec();
+			putCursorInNotFound(flags);
+        } else
+        	activeMdiChild()->insertPlainText(replace_str);
+        ok = activeMdiChild()->find(str, flags);
+        if(!ok) {
+			QMessageBox msgBox;
+			msgBox.setText(tr("Not found."));
+			msgBox.exec();
+			putCursorInNotFound(flags);
+        }
+    }
+}
+
+void MainWindow::replaceAll(QString str, QString replace_str, QTextDocument::FindFlags flags)
+{
+    if (activeMdiChild()) {
+        bool ok;
+    	   QTextCursor cursor = activeMdiChild()->textCursor();
+	   cursor.movePosition(QTextCursor::Start);
+	   cursor.beginEditBlock();
+        cursor = activeMdiChild()->document()->find(str, cursor, flags);
+        ok = !cursor.isNull();
+        while(ok) {
+        	cursor.insertText(replace_str);
+        	QTextCursor cursorAux = activeMdiChild()->document()->find(str, cursor, flags);
+        	ok = !cursorAux.isNull();
+        	if(ok) cursor.swap(cursorAux);
+        }
+        cursor.endEditBlock();
+    }
+}
+
+void MainWindow::goToLine()
+{
+	if (activeMdiChild()) {
+		int lineno = QInputDialog::getInt(this, tr("Go to line"), tr("Line number"), 1, 1);
+		QTextCursor cursor = activeMdiChild()->textCursor();
+		cursor.movePosition(QTextCursor::Start);
+		cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, lineno-1);
+		activeMdiChild()->setTextCursor(cursor);
+	}
+}
+
+void MainWindow::wordwrapMode(MdiChild *child)
+{
+	if(child==NULL) {
+		QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+		for (int i = 0; i < windows.size(); ++i) {
+			MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+			if(wordwrapAct->isChecked())
+				child->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+			else
+				child->setLineWrapMode(QPlainTextEdit::NoWrap);
+		}
+	}
+	else {
+		if(child) {
+			if(wordwrapAct->isChecked())
+				child->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+			else
+				child->setLineWrapMode(QPlainTextEdit::NoWrap);
+		}
+	}
+}
+
+void MainWindow::newView()
+{
+	if (activeMdiChild()) {
+		MdiChild *activeChild = activeMdiChild();
+		MdiChild *child = createMdiChild();
+		child->setView(activeChild);
+		child->show();
+	}
+}
+
+void MainWindow::saveAll()
+{
+	QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+	
+	for (int i = 0; i < windows.size(); ++i) {
+		MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+		child->save();
+	}
+}
+
+void MainWindow::minimizeAllSubWindows()
+{
+	QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+	
+	for (int i = 0; i < windows.size(); ++i) {
+		MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+		child->showMinimized();
+	}
+}
+
+void MainWindow::reparentDocument(Document *doc)
+{
+	QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+	
+	for (int i = 0; i < windows.size(); ++i) {
+		MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+		if( child->view() == doc ) {
+			doc->setParent(child);
+			break;
+		}
+	}
+}
 
 void MainWindow::about()
 {
-   QMessageBox::about(this, tr("About MDI"),
-            tr("The <b>MDI</b> example demonstrates how to write multiple "
-               "document interface applications using Qt."));
+   QMessageBox::about(this, tr("About MDI Edit"),
+            tr("Simple text editor based in the Qt MDI example.\n\n"
+            	"Copyright (C) 2014 P.L. Lucas\n"
+            ));
 }
 
 void MainWindow::updateMenus()
@@ -149,9 +444,9 @@ void MainWindow::updateMenus()
     bool hasMdiChild = (activeMdiChild() != 0);
     saveAct->setEnabled(hasMdiChild);
     saveAsAct->setEnabled(hasMdiChild);
-#ifndef QT_NO_CLIPBOARD
     pasteAct->setEnabled(hasMdiChild);
-#endif
+    selectAllAct->setEnabled(hasMdiChild);
+    completionAct->setEnabled(hasMdiChild);
     closeAct->setEnabled(hasMdiChild);
     closeAllAct->setEnabled(hasMdiChild);
     tileAct->setEnabled(hasMdiChild);
@@ -159,18 +454,26 @@ void MainWindow::updateMenus()
     nextAct->setEnabled(hasMdiChild);
     previousAct->setEnabled(hasMdiChild);
     separatorAct->setVisible(hasMdiChild);
+    
+    undoAct->setVisible(hasMdiChild);
+    redoAct->setVisible(hasMdiChild);
+    
+    findAct->setVisible(hasMdiChild);
+    findNextAct->setVisible(hasMdiChild);
+    goToLineAct->setVisible(hasMdiChild);
 
-#ifndef QT_NO_CLIPBOARD
     bool hasSelection = (activeMdiChild() &&
                          activeMdiChild()->textCursor().hasSelection());
     cutAct->setEnabled(hasSelection);
     copyAct->setEnabled(hasSelection);
-#endif
+
 }
 
 void MainWindow::updateWindowMenu()
 {
     windowMenu->clear();
+    windowMenu->addAction(newViewAct);
+    windowMenu->addAction(minimizeAllAct);
     windowMenu->addAction(closeAct);
     windowMenu->addAction(closeAllAct);
     windowMenu->addSeparator();
@@ -188,12 +491,15 @@ void MainWindow::updateWindowMenu()
         MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
 
         QString text;
+        QString windowTitle = child->userFriendlyCurrentFile();
+        if(child->view()->isModified())
+        	windowTitle+=" *";
         if (i < 9) {
             text = tr("&%1 %2").arg(i + 1)
-                               .arg(child->userFriendlyCurrentFile());
+                               .arg(windowTitle);
         } else {
             text = tr("%1 %2").arg(i + 1)
-                              .arg(child->userFriendlyCurrentFile());
+                              .arg(windowTitle);
         }
         QAction *action  = windowMenu->addAction(text);
         action->setCheckable(true);
@@ -208,29 +514,31 @@ MdiChild *MainWindow::createMdiChild()
     MdiChild *child = new MdiChild;
     mdiArea->addSubWindow(child);
 
-#ifndef QT_NO_CLIPBOARD
     connect(child, SIGNAL(copyAvailable(bool)),
             cutAct, SLOT(setEnabled(bool)));
     connect(child, SIGNAL(copyAvailable(bool)),
             copyAct, SLOT(setEnabled(bool)));
-#endif
+    connect(child, SIGNAL(reparentDocument(Document *)),
+            this, SLOT(reparentDocument(Document *)));
 
+    wordwrapMode(child);
+    setFont(child);
     return child;
 }
 
 void MainWindow::createActions()
 {
-    newAct = new QAction(QIcon(":/images/new.png"), tr("&New"), this);
+    newAct = new QAction(QIcon::fromTheme("document-new"), tr("&New"), this);
     newAct->setShortcuts(QKeySequence::New);
     newAct->setStatusTip(tr("Create a new file"));
     connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
 
-    openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
+    openAct = new QAction(QIcon::fromTheme("document-open"), tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip(tr("Open an existing file"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
-    saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save"), this);
+    saveAct = new QAction(QIcon::fromTheme("document-save"), tr("&Save"), this);
     saveAct->setShortcuts(QKeySequence::Save);
     saveAct->setStatusTip(tr("Save the document to disk"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
@@ -239,34 +547,78 @@ void MainWindow::createActions()
     saveAsAct->setShortcuts(QKeySequence::SaveAs);
     saveAsAct->setStatusTip(tr("Save the document under a new name"));
     connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
+    
+    saveAllAct = new QAction(tr("Save A&ll..."), this);
+    saveAllAct->setStatusTip(tr("Save all documents"));
+    connect(saveAllAct, SIGNAL(triggered()), this, SLOT(saveAll()));
 
-//! [0]
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);
     exitAct->setStatusTip(tr("Exit the application"));
     connect(exitAct, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
-//! [0]
 
-#ifndef QT_NO_CLIPBOARD
-    cutAct = new QAction(QIcon(":/images/cut.png"), tr("Cu&t"), this);
+    cutAct = new QAction(QIcon::fromTheme("edit-cut"), tr("Cu&t"), this);
     cutAct->setShortcuts(QKeySequence::Cut);
     cutAct->setStatusTip(tr("Cut the current selection's contents to the "
                             "clipboard"));
     connect(cutAct, SIGNAL(triggered()), this, SLOT(cut()));
 
-    copyAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy"), this);
+    copyAct = new QAction(QIcon::fromTheme("edit-copy"), tr("&Copy"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
     copyAct->setStatusTip(tr("Copy the current selection's contents to the "
                              "clipboard"));
     connect(copyAct, SIGNAL(triggered()), this, SLOT(copy()));
 
-    pasteAct = new QAction(QIcon(":/images/paste.png"), tr("&Paste"), this);
+    undoAct = new QAction( QIcon::fromTheme("edit-undo"), tr("&Undo"), this);
+    undoAct->setShortcuts(QKeySequence::Undo);
+    connect(undoAct, SIGNAL(triggered()), this, SLOT(undo()));
+    
+    findAct = new QAction(QIcon::fromTheme("edit-find"), tr("&Find"), this);
+    findAct->setShortcuts(QKeySequence::Find);
+    connect(findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
+    
+    findNextAct = new QAction( tr("Find &next"), this);
+    QList<QKeySequence> keysfindNextAct;
+    keysfindNextAct << QKeySequence(Qt::Key_F3);
+    findNextAct->setShortcuts(keysfindNextAct);
+    connect(findNextAct, SIGNAL(triggered()), this, SLOT(findNext()));
+    
+    goToLineAct = new QAction(tr("&Go to line"), this);
+    QList<QKeySequence> keysGoToLineAct;
+    keysGoToLineAct << QKeySequence(Qt::CTRL+Qt::Key_G);
+    goToLineAct->setShortcuts(keysGoToLineAct);
+    connect(goToLineAct, SIGNAL(triggered()), this, SLOT(goToLine()));
+    
+    redoAct = new QAction(QIcon::fromTheme("edit-redo"), tr("&Redo"), this);
+    redoAct->setShortcuts(QKeySequence::Redo);
+    connect(redoAct, SIGNAL(triggered()), this, SLOT(redo()));
+    
+    wordwrapAct = new QAction( tr("&Wordwrap"), this);
+    wordwrapAct->setCheckable(true);
+    connect(wordwrapAct, SIGNAL(triggered()), this, SLOT(wordwrapMode()));
+    
+    fontAct = new QAction( tr("&Font"), this);
+    connect(fontAct, SIGNAL(triggered()), this, SLOT(showFontDialog()));
+
+    pasteAct = new QAction(QIcon::fromTheme("edit-paste"), tr("&Paste"), this);
     pasteAct->setShortcuts(QKeySequence::Paste);
     pasteAct->setStatusTip(tr("Paste the clipboard's contents into the current "
                               "selection"));
     connect(pasteAct, SIGNAL(triggered()), this, SLOT(paste()));
-#endif
+    
+    selectAllAct = new QAction(QIcon::fromTheme("edit-select-all"), tr("Select All"), this);
+    selectAllAct->setShortcuts(QKeySequence::SelectAll);
+    connect(selectAllAct, SIGNAL(triggered()), this, SLOT(selectAll()));
+    
+    completionAct = new QAction( tr("Completer"), this);
+    QList<QKeySequence> keysCompletionAct;
+    keysCompletionAct << QKeySequence(Qt::Key_F1);
+    completionAct->setShortcuts(keysCompletionAct);
+    connect(completionAct, SIGNAL(triggered()), this, SLOT(completion()));
 
+    newViewAct = new QAction( tr("&New view"), this);
+    connect(newViewAct, SIGNAL(triggered()), this, SLOT(newView()));
+    
     closeAct = new QAction(tr("Cl&ose"), this);
     closeAct->setStatusTip(tr("Close the active window"));
     connect(closeAct, SIGNAL(triggered()),
@@ -276,6 +628,11 @@ void MainWindow::createActions()
     closeAllAct->setStatusTip(tr("Close all the windows"));
     connect(closeAllAct, SIGNAL(triggered()),
             mdiArea, SLOT(closeAllSubWindows()));
+
+    minimizeAllAct = new QAction(tr("&Minimize All"), this);
+    minimizeAllAct->setStatusTip(tr("Minimize all the windows"));
+    connect(minimizeAllAct, SIGNAL(triggered()),
+            this, SLOT(minimizeAllSubWindows()));
 
     tileAct = new QAction(tr("&Tile"), this);
     tileAct->setStatusTip(tr("Tile the windows"));
@@ -317,17 +674,29 @@ void MainWindow::createMenus()
     fileMenu->addAction(openAct);
     fileMenu->addAction(saveAct);
     fileMenu->addAction(saveAsAct);
+    fileMenu->addAction(saveAllAct);
     fileMenu->addSeparator();
     QAction *action = fileMenu->addAction(tr("Switch layout direction"));
     connect(action, SIGNAL(triggered()), this, SLOT(switchLayoutDirection()));
     fileMenu->addAction(exitAct);
 
     editMenu = menuBar()->addMenu(tr("&Edit"));
-#ifndef QT_NO_CLIPBOARD
+    editMenu->addAction(undoAct);
+    editMenu->addAction(redoAct);
+    editMenu->addSeparator();
     editMenu->addAction(cutAct);
     editMenu->addAction(copyAct);
     editMenu->addAction(pasteAct);
-#endif
+    editMenu->addAction(selectAllAct);
+    editMenu->addSeparator();
+    editMenu->addAction(completionAct);
+    editMenu->addSeparator();
+    editMenu->addAction(findAct);
+    editMenu->addAction(findNextAct);
+    editMenu->addAction(goToLineAct);
+    editMenu->addSeparator();
+    editMenu->addAction(wordwrapAct);
+    editMenu->addAction(fontAct);
 
     windowMenu = menuBar()->addMenu(tr("&Window"));
     updateWindowMenu();
@@ -347,12 +716,11 @@ void MainWindow::createToolBars()
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(saveAct);
 
-#ifndef QT_NO_CLIPBOARD
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(cutAct);
     editToolBar->addAction(copyAct);
     editToolBar->addAction(pasteAct);
-#endif
+    editToolBar->addAction(findAct);
 }
 
 void MainWindow::createStatusBar()
@@ -362,18 +730,32 @@ void MainWindow::createStatusBar()
 
 void MainWindow::readSettings()
 {
-    QSettings settings("QtProject", "MDI Example");
+    QSettings settings("QtProject", "MDI Edit");
     QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
     QSize size = settings.value("size", QSize(400, 400)).toSize();
     move(pos);
     resize(size);
+    fileToolBar->setVisible(settings.value("fileToolBar", QVariant(true)).toBool());
+    editToolBar->setVisible(settings.value("editToolBar", QVariant(true)).toBool());
+    settings.beginGroup("format");
+    wordwrapAct->setChecked(settings.value("wordwrap").toBool());
+    wordwrapMode();
+    font.fromString(settings.value("font").toString());
+    setFont();
+    settings.endGroup();
 }
 
 void MainWindow::writeSettings()
 {
-    QSettings settings("QtProject", "MDI Example");
+    QSettings settings("QtProject", "MDI Edit");
     settings.setValue("pos", pos());
     settings.setValue("size", size());
+    settings.setValue("fileToolBar", fileToolBar->isVisible());
+    settings.setValue("editToolBar", editToolBar->isVisible());
+    settings.beginGroup("format");
+    settings.setValue("wordwrap", wordwrapAct->isChecked());
+    settings.setValue("font", font.toString());
+    settings.endGroup();
 }
 
 MdiChild *MainWindow::activeMdiChild()
