@@ -418,6 +418,14 @@ void MainWindow::minimizeAllSubWindows()
 	}
 }
 
+void MainWindow::toggleTabbedViewMode()
+{
+	if(tabbedViewAct->isChecked())
+		mdiArea->setViewMode(QMdiArea::TabbedView);
+	else
+		mdiArea->setViewMode(QMdiArea::SubWindowView);
+}
+
 void MainWindow::reparentDocument(Document *doc)
 {
 	QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
@@ -479,6 +487,7 @@ void MainWindow::updateWindowMenu()
     windowMenu->addSeparator();
     windowMenu->addAction(tileAct);
     windowMenu->addAction(cascadeAct);
+    windowMenu->addAction(tabbedViewAct);
     windowMenu->addSeparator();
     windowMenu->addAction(nextAct);
     windowMenu->addAction(previousAct);
@@ -641,6 +650,11 @@ void MainWindow::createActions()
     cascadeAct = new QAction(tr("&Cascade"), this);
     cascadeAct->setStatusTip(tr("Cascade the windows"));
     connect(cascadeAct, SIGNAL(triggered()), mdiArea, SLOT(cascadeSubWindows()));
+    
+    tabbedViewAct = new QAction(tr("T&abbed view"), this);
+    tabbedViewAct->setStatusTip(tr("Display sub-windows with tabs in a tab bar."));
+    tabbedViewAct->setCheckable(true);
+    connect(tabbedViewAct, SIGNAL(triggered()), this, SLOT(toggleTabbedViewMode()));
 
     nextAct = new QAction(tr("Ne&xt"), this);
     nextAct->setShortcuts(QKeySequence::NextChild);
@@ -737,6 +751,8 @@ void MainWindow::readSettings()
     resize(size);
     fileToolBar->setVisible(settings.value("fileToolBar", QVariant(true)).toBool());
     editToolBar->setVisible(settings.value("editToolBar", QVariant(true)).toBool());
+    tabbedViewAct->setChecked(settings.value("tabbedViewMode", QVariant(false)).toBool());
+    toggleTabbedViewMode();
     settings.beginGroup("format");
     wordwrapAct->setChecked(settings.value("wordwrap").toBool());
     wordwrapMode();
@@ -752,6 +768,7 @@ void MainWindow::writeSettings()
     settings.setValue("size", size());
     settings.setValue("fileToolBar", fileToolBar->isVisible());
     settings.setValue("editToolBar", editToolBar->isVisible());
+    settings.setValue("tabbedViewMode", tabbedViewAct->isChecked());
     settings.beginGroup("format");
     settings.setValue("wordwrap", wordwrapAct->isChecked());
     settings.setValue("font", font.toString());

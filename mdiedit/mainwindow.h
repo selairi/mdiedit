@@ -100,6 +100,7 @@ private slots:
     void saveAll();
     void minimizeAllSubWindows();
     void reparentDocument(Document *doc);
+    void toggleTabbedViewMode();
 
 private:
     FindDialog *findDialog;
@@ -151,6 +152,7 @@ private:
     QAction *minimizeAllAct;
     QAction *tileAct;
     QAction *cascadeAct;
+    QAction *tabbedViewAct;
     QAction *nextAct;
     QAction *previousAct;
     QAction *separatorAct;
