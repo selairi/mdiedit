@@ -65,6 +65,9 @@ public:
 signals:
 	void reparentDocument(Document *);
 
+public slots:
+    void setCurrentFile(QString fileName);
+
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent * e);
@@ -72,7 +75,6 @@ protected:
 private slots:
     void documentWasModified();
     void documentContentsChanged();
-    void setCurrentFile(QString fileName);
 
 private:
     bool maybeSave();

@@ -41,6 +41,7 @@
 #include <QFontDialog>
 #include <QInputDialog> 
 #include <QCompleter>
+#include <QFileInfo>
 
 #include "mainwindow.h"
 #include "mdichild.h"
@@ -116,11 +117,19 @@ void MainWindow::open(QString fileName)
         }
 
         MdiChild *child = createMdiChild();
-        if (child->loadFile(fileName)) {
-            statusBar()->showMessage(tr("File loaded"), 2000);
+        QFileInfo fileInfo(fileName);
+        if(fileInfo.exists()) {
+	        if (child->loadFile(fileName)) {
+	            statusBar()->showMessage(tr("File loaded"), 2000);
+	            child->show();
+	        } else {
+	            child->close();
+	        }
+        }
+        else {
+            child->setCurrentFile(fileName);
             child->show();
-        } else {
-            child->close();
+            statusBar()->showMessage(tr("File doesn't exist"), 2000);
         }
     }
 }

@@ -253,12 +253,18 @@ bool MdiChild::maybeSave()
 
 void MdiChild::setCurrentFile(QString fileName)
 {
-	if(QFileInfo(fileName).canonicalFilePath() != QFileInfo(_document->fileName()).canonicalFilePath())
+	QFileInfo fileInfo(fileName);
+	if(! fileInfo.exists() && _document->fileName() != fileName )
+		_document->setFileName(fileName);
+	else if(fileInfo.canonicalFilePath() != QFileInfo(_document->fileName()).canonicalFilePath())
 		_document->setFileName(QFileInfo(fileName).canonicalFilePath());
 	isUntitled = false;
-	document()->setModified(false);
+	_document->setModified(false);
 	setWindowModified(false);
-	setWindowTitle(userFriendlyCurrentFile() + "[*]");
+	if(fileInfo.exists())
+		setWindowTitle(userFriendlyCurrentFile() + "[*]");
+	else
+		setWindowTitle(fileName + "[*]");
 }
 
 QString MdiChild::strippedName(const QString &fullFileName)
