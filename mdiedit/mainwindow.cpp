@@ -367,11 +367,14 @@ void MainWindow::replaceAll(QString str, QString replace_str, QTextDocument::Fin
 void MainWindow::goToLine()
 {
 	if (activeMdiChild()) {
-		int lineno = QInputDialog::getInt(this, tr("Go to line"), tr("Line number"), 1, 1);
 		QTextCursor cursor = activeMdiChild()->textCursor();
+		bool ok;
+		int lineno = QInputDialog::getInt(this, tr("Go to line"), tr("Line number"), cursor.blockNumber()+1, 1, 2147483647, 1, &ok);
 		cursor.movePosition(QTextCursor::Start);
-		cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, lineno-1);
-		activeMdiChild()->setTextCursor(cursor);
+		if(ok) {
+			cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, lineno-1);
+			activeMdiChild()->setTextCursor(cursor);
+		}
 	}
 }
 
