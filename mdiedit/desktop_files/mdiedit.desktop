@@ -1,0 +1,10 @@
+[Desktop Entry]
+Keywords=editor
+Name=MDI Edit
+Comment=Simple text editor
+Exec=mdiedit %f
+Icon=mdiedit
+Terminal=false
+Type=Application
+MimeType=text/plain
+Categories=Utility;TextEditor;

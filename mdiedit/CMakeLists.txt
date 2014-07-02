@@ -22,6 +22,14 @@ set(QRC_FILES
 
 )
 
+set(DESKTOP_FILES
+	desktop_files/mdiedit.desktop
+)
+
+set(ICON_FILES
+	desktop_files/mdiedit.svg
+)
+
 cmake_minimum_required( VERSION 2.6 )
 
 option(USE_QT5 "Force use the Qt5." $ENV{USE_QT5})
@@ -92,7 +100,6 @@ add_executable(${PROJECT_NAME}
     ${QRC_SOURCES}
     ${QM_FILES}
     ${MOC_SOURCES}
-    ${DESKTOP_FILES}
 )
 #add_dependencies(${PROJECT_NAME} ${LXQT_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${QTX_LIBRARIES} ${LXQT_LIBRARIES})
@@ -100,6 +107,7 @@ target_link_libraries(${PROJECT_NAME} ${QTX_LIBRARIES} ${LXQT_LIBRARIES})
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 install(FILES ${CONFIG_FILES} DESTINATION ${APP_SHARE_DIR})
 install(FILES ${DESKTOP_FILES} DESTINATION share/applications)
+install(FILES ${ICON_FILES} DESTINATION share/icons)
 
 # building tarball with CPack -------------------------------------------------
 include (InstallRequiredSystemLibraries)

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+ <!-- Created with SVG-edit - http://svg-edit.googlecode.com/ -->
+ <g>
+  <title>Layer 1</title>
+  <rect id="svg_4" transform="rotate(28.9314, 42.9014, 27.4834)" fill-opacity="0.5" height="42.477539" width="33.93457" y="6.244144" x="25.936523" stroke="#000000" fill="#ffffaa"/>
+  <rect transform="rotate(-17.9588, 22.377, 26.8877)" fill-opacity="0.5" id="svg_1" height="42.477539" width="33.93457" y="5.648928" x="5.411621" stroke="#000000" fill="#ffffaa"/>
+  <text transform="rotate(-17.9873, 21.7856, 23.4468)" xml:space="preserve" text-anchor="middle" font-family="serif" font-size="24" id="svg_2" y="31.752443" x="21.785645" stroke-width="0" stroke="#000000" fill="#000000">M</text>
+  <text id="svg_3" transform="rotate(30.3026, 47.6519, 23.6841)" xml:space="preserve" text-anchor="middle" font-family="serif" font-size="24" y="31.989753" x="47.651867" stroke-width="0" stroke="#000000" fill="#000000">D</text>
+  <rect id="svg_5" transform="rotate(0.00106219, 33.4131, 41.4824)" fill-opacity="0.5" height="42.477539" width="33.93457" y="20.242682" x="16.446777" stroke="#000000" fill="#ffffaa"/>
+  <text style="cursor: move;" id="svg_6" transform="rotate(-2.72635, 33.8882, 44.8042)" xml:space="preserve" text-anchor="middle" font-family="serif" font-size="24" y="53.109869" x="33.888195" stroke-width="0" stroke="#000000" fill="#000000">I</text>
+ </g>
+</svg>
