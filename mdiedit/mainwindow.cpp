@@ -77,7 +77,8 @@ MainWindow::MainWindow()
 void MainWindow::showLineNumber() {
     if (activeMdiChild()) {
         int lineno = activeMdiChild()->textCursor().blockNumber();
-        QString str = QString(tr("Line: %1")).arg(++lineno);
+        int columnno = activeMdiChild()->textCursor().positionInBlock();
+        QString str = QString(tr("Line: %1 Column: %2")).arg(++lineno).arg(++columnno);
         statusBar()->showMessage(str);
     }
 }
