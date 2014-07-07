@@ -334,8 +334,10 @@ void MainWindow::replace(QString str, QString replace_str, QTextDocument::FindFl
 			msgBox.setText(tr("Not found."));
 			msgBox.exec();
 			putCursorInNotFound(flags);
-        } else
-        	activeMdiChild()->insertPlainText(replace_str);
+			return;
+        } 
+        else
+        		activeMdiChild()->insertPlainText(replace_str);
         ok = activeMdiChild()->find(str, flags);
         if(!ok) {
 			QMessageBox msgBox;
