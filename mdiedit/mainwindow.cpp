@@ -76,9 +76,10 @@ MainWindow::MainWindow()
 
 void MainWindow::showLineNumber() {
     if (activeMdiChild()) {
-        int lineno = activeMdiChild()->textCursor().blockNumber();
-        int columnno = activeMdiChild()->textCursor().positionInBlock();
-        QString str = QString(tr("Line: %1 Column: %2")).arg(++lineno).arg(++columnno);
+        MdiChild *child = activeMdiChild();
+        int lineno = child->textCursor().blockNumber();
+        int columnno = child->textCursor().positionInBlock();
+        QString str = QString(tr("%1,%2")).arg(++lineno).arg(++columnno);
         statusBar()->showMessage(str);
     }
 }
@@ -253,32 +254,31 @@ void MainWindow::putCursorInNotFound(QTextDocument::FindFlags flags)
 	}
 }
 
-void MainWindow::find(QString str, QTextDocument::FindFlags flags)
-{
-    if (activeMdiChild()) {
-        bool ok = activeMdiChild()->find(str, flags);
-        if(!ok) {
-			QMessageBox msgBox;
-			msgBox.setText(tr("Not found."));
-			msgBox.exec();
-			putCursorInNotFound(flags);
-        }
-    }
-}
-
-void MainWindow::findNext()
+bool MainWindow::findNext()
 {
     if (activeMdiChild() && findDialog) {
         QTextDocument::FindFlags flags = findDialog->findFlags();
         QString str = findDialog->text();
-        bool ok = activeMdiChild()->find(str, flags);
+        bool regExpOk = findDialog->regExpChecked();
+        bool ok;
+        if(regExpOk) {
+             QTextCursor cursor = activeMdiChild()->textCursor();
+             QTextCursor cursorAux = activeMdiChild()->document()->find(QRegExp(str), cursor, flags);
+             ok = !cursorAux.isNull();
+	         if(ok)
+	         	activeMdiChild()->setTextCursor(cursorAux);
+        }
+        else
+            ok = activeMdiChild()->find(str, flags);
         if(!ok) {
 			QMessageBox msgBox;
 			msgBox.setText(tr("Not found."));
 			msgBox.exec();
 			putCursorInNotFound(flags);
         }
+        return ok;
     }
+    return false;
 }
 
 void MainWindow::showFindDialog()
@@ -286,9 +286,9 @@ void MainWindow::showFindDialog()
 	if (activeMdiChild()) {
 		if(findDialog == NULL) {
 			findDialog = new FindDialog(this);
-			connect(findDialog, SIGNAL(find(QString,QTextDocument::FindFlags)), this, SLOT(find(QString,QTextDocument::FindFlags)));
-			connect(findDialog, SIGNAL(replace(QString,QString,QTextDocument::FindFlags)), this, SLOT(replace(QString,QString,QTextDocument::FindFlags)));
-			connect(findDialog, SIGNAL(replaceAll(QString,QString,QTextDocument::FindFlags)), this, SLOT(replaceAll(QString,QString,QTextDocument::FindFlags)));
+			connect(findDialog, SIGNAL(find()), this, SLOT(findNext()));
+			connect(findDialog, SIGNAL(replace()), this, SLOT(replace()));
+			connect(findDialog, SIGNAL(replaceAll()), this, SLOT(replaceAll()));
 		}
 		findDialog->showDialog();
 	}
@@ -319,50 +319,54 @@ void MainWindow::showFontDialog()
 	}
 }
 
-void MainWindow::replace(QString str, QString replace_str, QTextDocument::FindFlags flags)
+void MainWindow::replace()
 {
-    bool ok = true;
-    if (activeMdiChild()) {
+    
+    if (activeMdiChild() && findDialog) {
+        QTextDocument::FindFlags flags = findDialog->findFlags();
+        QString str = findDialog->text();
+        QString replace_str = findDialog->replaceText();
+    	    bool ok = true;
         if(activeMdiChild()->textCursor().hasSelection()) {
             if( activeMdiChild()->textCursor().selectedText() == replace_str )
-                 ok = activeMdiChild()->find(str, flags);
+                 ok = findNext();
         }
         else
-             ok = activeMdiChild()->find(str, flags);
-        if(!ok) {
-			QMessageBox msgBox;
-			msgBox.setText(tr("Not found."));
-			msgBox.exec();
-			putCursorInNotFound(flags);
-			return;
-        } 
+             ok = findNext();
+        if(!ok)
+			return; 
         else
         		activeMdiChild()->insertPlainText(replace_str);
-        ok = activeMdiChild()->find(str, flags);
-        if(!ok) {
-			QMessageBox msgBox;
-			msgBox.setText(tr("Not found."));
-			msgBox.exec();
-			putCursorInNotFound(flags);
-        }
+        ok = findNext();
     }
 }
 
-void MainWindow::replaceAll(QString str, QString replace_str, QTextDocument::FindFlags flags)
+void MainWindow::replaceAll()
 {
-    if (activeMdiChild()) {
-        bool ok;
+	if (activeMdiChild() && findDialog) {
+       QTextDocument::FindFlags flags = findDialog->findFlags();
+       QString str = findDialog->text();
+       QString replace_str = findDialog->replaceText();
+       bool regExpOk = findDialog->regExpChecked();
+       bool ok;
     	   QTextCursor cursor = activeMdiChild()->textCursor();
 	   cursor.movePosition(QTextCursor::Start);
 	   cursor.beginEditBlock();
-        cursor = activeMdiChild()->document()->find(str, cursor, flags);
+        if(regExpOk)
+	        		cursor = activeMdiChild()->document()->find(QRegExp(str), cursor, flags);
+	        	else
+	        		cursor = activeMdiChild()->document()->find(str, cursor, flags);
         ok = !cursor.isNull();
         while(ok) {
-        	cursor.insertText(replace_str);
-        	QTextCursor cursorAux = activeMdiChild()->document()->find(str, cursor, flags);
-        	ok = !cursorAux.isNull();
-        	if(ok) cursor.swap(cursorAux);
-        }
+	        	cursor.insertText(replace_str);
+	        	QTextCursor cursorAux;
+	        	if(regExpOk)
+	        		cursorAux = activeMdiChild()->document()->find(QRegExp(str), cursor, flags);
+	        	else
+	        		cursorAux = activeMdiChild()->document()->find(str, cursor, flags);
+	        	ok = !cursorAux.isNull();
+	        	if(ok) cursor.swap(cursorAux);
+	    }
         cursor.endEditBlock();
     }
 }
@@ -459,6 +463,7 @@ void MainWindow::about()
    QMessageBox::about(this, tr("About MDI Edit"),
             tr("Simple text editor based in the Qt MDI example.\n\n"
             	"Copyright (C) 2014 P.L. Lucas\n"
+            	"License: 3-clause BSD"
             ));
 }
 
@@ -636,7 +641,7 @@ void MainWindow::createActions()
     
     completionAct = new QAction( tr("Completer"), this);
     QList<QKeySequence> keysCompletionAct;
-    keysCompletionAct << QKeySequence(Qt::Key_F1);
+    keysCompletionAct << QKeySequence(Qt::Key_F2);
     completionAct->setShortcuts(keysCompletionAct);
     connect(completionAct, SIGNAL(triggered()), this, SLOT(completion()));
 

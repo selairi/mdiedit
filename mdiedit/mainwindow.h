@@ -80,10 +80,9 @@ private slots:
     void undo();
     void redo();
     void completion();
-    void find(QString,QTextDocument::FindFlags);
-    void findNext();
-    void replace(QString,QString,QTextDocument::FindFlags);
-    void replaceAll(QString,QString,QTextDocument::FindFlags);
+    bool findNext();
+    void replace();
+    void replaceAll();
     void showFindDialog();
     void goToLine();
     void wordwrapMode(MdiChild *child = NULL);

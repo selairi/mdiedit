@@ -51,12 +51,14 @@ public:
     FindDialog(QWidget * parent = 0);
     QTextDocument::FindFlags findFlags();
     QString text();
+    QString replaceText();
+    bool regExpChecked();
     void showDialog();
 
 signals:
-	void find(QString,QTextDocument::FindFlags);
-	void replace(QString,QString,QTextDocument::FindFlags);
-	void replaceAll(QString,QString,QTextDocument::FindFlags);
+	void find();
+	void replace();
+	void replaceAll();
 
 private:
     Ui::Find ui;

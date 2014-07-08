@@ -38,7 +38,8 @@
 
 #include "finddialog.h"
 
-FindDialog::FindDialog(QWidget * parent):QDialog(parent) {
+FindDialog::FindDialog(QWidget * parent):QDialog(parent) 
+{
 	ui.setupUi(this);
 	connect(ui.findButton, SIGNAL(clicked()), this, SLOT(findClicked()));
 	connect(ui.replaceButton, SIGNAL(clicked()), this, SLOT(replaceClicked()));
@@ -46,19 +47,23 @@ FindDialog::FindDialog(QWidget * parent):QDialog(parent) {
 	connect(ui.closeButton, SIGNAL(clicked()), this, SLOT(accept()));
 }
 
-void FindDialog::findClicked() {
-	emit find(ui.findLineEdit->text(), findFlags());
+void FindDialog::findClicked() 
+{
+	emit find();
 }
 
-void FindDialog::replaceClicked() {
-	emit replace(ui.findLineEdit->text(), ui.replaceLineEdit->text(), findFlags());
+void FindDialog::replaceClicked() 
+{
+	emit replace();
 }
 
-void FindDialog::replaceAllClicked() {
-	emit replaceAll(ui.findLineEdit->text(), ui.replaceLineEdit->text(), findFlags());
+void FindDialog::replaceAllClicked() 
+{
+	emit replaceAll();
 }
 
-QTextDocument::FindFlags FindDialog::findFlags() {
+QTextDocument::FindFlags FindDialog::findFlags() 
+{
 	QTextDocument::FindFlags flags = 0;
 	if(ui.sensitiveCheckBox->isChecked())
 		flags |= QTextDocument::FindCaseSensitively;
@@ -67,13 +72,25 @@ QTextDocument::FindFlags FindDialog::findFlags() {
 	return flags;
 }
 
-QString FindDialog::text()
+QString FindDialog::text() 
 {
 	return ui.findLineEdit->text();
 }
 
-void FindDialog::showDialog() {
+QString FindDialog::replaceText() 
+{
+	return ui.replaceLineEdit->text();
+}
+
+void FindDialog::showDialog() 
+{
 	ui.findLineEdit->setFocus(Qt::ActiveWindowFocusReason);
 	show();
+}
+
+
+bool FindDialog::regExpChecked()
+{
+	return ui.regExpCheckBox->isChecked();
 }
 
