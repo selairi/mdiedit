@@ -103,6 +103,9 @@ add_executable(${PROJECT_NAME}
 )
 #add_dependencies(${PROJECT_NAME} ${LXQT_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${QTX_LIBRARIES} ${LXQT_LIBRARIES})
+if(USE_QT4)
+target_link_libraries(${PROJECT_NAME} Qt4::QtGui Qt4::QtXml)
+endif()
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 install(FILES ${CONFIG_FILES} DESTINATION ${APP_SHARE_DIR})

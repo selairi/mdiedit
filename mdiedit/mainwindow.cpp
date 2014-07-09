@@ -371,7 +371,8 @@ void MainWindow::replaceAll()
 	        	else
 	        		cursorAux = activeMdiChild()->document()->find(str, cursor, flags);
 	        	ok = !cursorAux.isNull();
-	        	if(ok) cursor.swap(cursorAux);
+	        	if(ok) //cursor.swap(cursorAux);
+	        		cursor=cursorAux;
 	    }
         cursor.endEditBlock();
     }
