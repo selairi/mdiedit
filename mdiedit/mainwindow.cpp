@@ -202,6 +202,8 @@ void MainWindow::redo()
 void MainWindow::completion()
 {
 	if (activeMdiChild()) {
+		MdiChild *activeChild = activeMdiChild();
+	
 		QDialog dialog(this);
 		dialog.setWindowTitle(tr("Completer"));
 		QHBoxLayout *layout = new QHBoxLayout(&dialog);
@@ -222,15 +224,15 @@ void MainWindow::completion()
 		completerWordListModel->setStringList(completerWordList);
 		completer->setModel(completerWordListModel);
 		
-		QTextCursor cursor = activeMdiChild()->textCursor();
-		QTextCursor cursorOriginal = activeMdiChild()->textCursor();
+		QTextCursor cursor = activeChild->textCursor();
+		QTextCursor cursorOriginal = activeChild->textCursor();
 		cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
 		QString text = cursor.selectedText();
 		if(QRegExp("\\w").exactMatch(text)) {
-			cursor = activeMdiChild()->textCursor();
+			cursor = activeChild->textCursor();
 			cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
 			text = cursor.selectedText();
-			activeMdiChild()->setTextCursor(cursor);
+			activeChild->setTextCursor(cursor);
 		} else
 			text = QString();
 		
@@ -240,13 +242,14 @@ void MainWindow::completion()
 		layout->addWidget(line);
 		connect(line, SIGNAL(returnPressed()), &dialog, SLOT(accept()));
 		int ok = dialog.exec();
-		if(ok == QDialog::Accepted) {
-			activeMdiChild()->insertPlainText(line->text());
-		} else
-			activeMdiChild()->setTextCursor(cursorOriginal);
+		if(ok == QDialog::Accepted)
+			activeChild->insertPlainText(line->text());
+		else
+			activeChild->setTextCursor(cursorOriginal);
+		disconnect(line, SIGNAL(returnPressed()), &dialog, SLOT(accept()));
 		
-		completerWordList.clear();
-		completerWordListModel->setStringList(completerWordList);
+		//completerWordList.clear();
+		//completerWordListModel->setStringList(completerWordList);
 	}
 }
 
