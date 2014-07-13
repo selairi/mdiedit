@@ -41,25 +41,10 @@
 FindDialog::FindDialog(QWidget * parent):QDialog(parent) 
 {
 	ui.setupUi(this);
-	connect(ui.findButton, SIGNAL(clicked()), this, SLOT(findClicked()));
-	connect(ui.replaceButton, SIGNAL(clicked()), this, SLOT(replaceClicked()));
-	connect(ui.replaceAllButton, SIGNAL(clicked()), this, SLOT(replaceAllClicked()));
+	connect(ui.findButton, SIGNAL(clicked()), this, SIGNAL(find()));
+	connect(ui.replaceButton, SIGNAL(clicked()), this, SIGNAL(replace()));
+	connect(ui.replaceAllButton, SIGNAL(clicked()), this, SIGNAL(replaceAll()));
 	connect(ui.closeButton, SIGNAL(clicked()), this, SLOT(accept()));
-}
-
-void FindDialog::findClicked() 
-{
-	emit find();
-}
-
-void FindDialog::replaceClicked() 
-{
-	emit replace();
-}
-
-void FindDialog::replaceAllClicked() 
-{
-	emit replaceAll();
 }
 
 QTextDocument::FindFlags FindDialog::findFlags() 
