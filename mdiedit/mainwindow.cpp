@@ -332,8 +332,8 @@ void MainWindow::replace()
 {
     
     if (activeMdiChild() && findDialog) {
-//        QTextDocument::FindFlags flags = findDialog->findFlags();
-//        QString str = findDialog->text();
+//		QTextDocument::FindFlags flags = findDialog->findFlags();
+//		QString str = findDialog->text();
         QString replace_str = findDialog->replaceText();
     	    bool ok = true;
         if(activeMdiChild()->textCursor().hasSelection()) {

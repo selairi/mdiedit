@@ -62,11 +62,6 @@ signals:
 
 private:
     Ui::Find ui;
-    
-private slots:
-	void findClicked();
-	void replaceClicked();
-	void replaceAllClicked();
 };
 
 #endif
