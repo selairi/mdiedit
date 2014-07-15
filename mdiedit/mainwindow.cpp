@@ -54,6 +54,7 @@
 
 MainWindow::MainWindow()
 {
+	lineNumberLabel = NULL;
     mdiArea = new QMdiArea;
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -86,7 +87,8 @@ void MainWindow::showLineNumber() {
         int lineno = child->textCursor().blockNumber();
         int columnno = child->textCursor().positionInBlock();
         QString str = QString(tr("%1,%2")).arg(++lineno).arg(++columnno);
-        statusBar()->showMessage(str);
+        //statusBar()->showMessage(str);
+        lineNumberLabel->setText(str);
     }
 }
 
@@ -770,6 +772,9 @@ void MainWindow::createToolBars()
 void MainWindow::createStatusBar()
 {
     statusBar()->showMessage(tr("Ready"));
+    lineNumberLabel = new QLabel(this);
+    lineNumberLabel->setTextFormat(Qt::PlainText);
+    statusBar()->addPermanentWidget(lineNumberLabel);
 }
 
 void MainWindow::readSettings()

@@ -53,6 +53,7 @@ class QMenu;
 class QMdiArea;
 class QMdiSubWindow;
 class QSignalMapper;
+class QLabel;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -157,6 +158,8 @@ private:
     QAction *separatorAct;
     QAction *aboutAct;
     QAction *aboutQtAct;
+    
+    QLabel *lineNumberLabel;
 };
 
 #endif
