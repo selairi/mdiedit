@@ -38,11 +38,21 @@
 ****************************************************************************/
 
 #include <QApplication>
+#include <QTranslator>
+#include <QLibraryInfo>
+#include <QDebug>
 #include "mainwindow.h"
+#include "config.h"
 
 int main(int argn, char *argv[])
-	{
+{
 	QApplication app(argn, argv);
+	
+	QTranslator qtTranslator;
+    qtTranslator.load(QString(TRANSLATIONS_PATH "/mdiedit-") + QLocale::system().name()+ QString(".qm"));
+    app.installTranslator(&qtTranslator);
+
+	
 	QStringList fileList;
 	for(int i=1;i<argn;i++) {
 		fileList << argv[i];
