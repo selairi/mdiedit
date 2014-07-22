@@ -83,9 +83,9 @@ MainWindow::MainWindow()
 
 #include <QTime>
 void MainWindow::showLineNumber() {
-	static QTime time = QTime::currentTime();
-	if(time.restart()<100)
-		return;
+	// static QTime time = QTime::currentTime();
+	// if(time.restart()<100)
+	// 	return;
 	MdiChild *child = activeMdiChild();
     if (child && lineNumberLabel) {
         int lineno = child->textCursor().blockNumber();
