@@ -56,6 +56,7 @@ MdiChild::MdiChild()
 	isUntitled = true;
 	autoindent = true;
 	setTabStopWidth(20);
+	setCursorWidth(3);
 	connect(document(), SIGNAL(contentsChanged()),
 		this, SLOT(documentContentsChanged()));
 	connect(document(), SIGNAL(modificationChanged(bool)),

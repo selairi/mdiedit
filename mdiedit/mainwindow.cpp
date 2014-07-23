@@ -54,6 +54,7 @@
 
 MainWindow::MainWindow()
 {
+	lineNumberLabel = NULL;
     mdiArea = new QMdiArea;
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -80,20 +81,30 @@ MainWindow::MainWindow()
     findDialog = NULL;
 }
 
+#include <QTime>
 void MainWindow::showLineNumber() {
-    if (activeMdiChild()) {
-        MdiChild *child = activeMdiChild();
+	// static QTime time = QTime::currentTime();
+	// if(time.restart()<100)
+	// 	return;
+	MdiChild *child = activeMdiChild();
+    if (child && lineNumberLabel) {
         int lineno = child->textCursor().blockNumber();
         int columnno = child->textCursor().positionInBlock();
         QString str = QString(tr("%1,%2")).arg(++lineno).arg(++columnno);
-        statusBar()->showMessage(str);
+        //statusBar()->showMessage(str);
+        lineNumberLabel->setText(str);
+        //qDebug() << str;
     }
 }
 
 void MainWindow::updateMdiChild(QMdiSubWindow *) {
 	if(activeMdiChild()) {
-		connect(activeMdiChild(), SIGNAL(cursorPositionChanged()),
-		this, SLOT(showLineNumber()));
+		QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+		for (int i = 0; i < windows.size(); ++i) {
+			MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+			disconnect(child, SIGNAL(cursorPositionChanged()), this, SLOT(showLineNumber()));
+		}
+		connect(activeMdiChild(), SIGNAL(cursorPositionChanged()), this, SLOT(showLineNumber()));
 	}
 }
 
@@ -332,8 +343,8 @@ void MainWindow::replace()
 {
     
     if (activeMdiChild() && findDialog) {
-//		QTextDocument::FindFlags flags = findDialog->findFlags();
-//		QString str = findDialog->text();
+		//		QTextDocument::FindFlags flags = findDialog->findFlags();
+		//		QString str = findDialog->text();
         QString replace_str = findDialog->replaceText();
     	    bool ok = true;
         if(activeMdiChild()->textCursor().hasSelection()) {
@@ -770,6 +781,9 @@ void MainWindow::createToolBars()
 void MainWindow::createStatusBar()
 {
     statusBar()->showMessage(tr("Ready"));
+    lineNumberLabel = new QLabel(this);
+    lineNumberLabel->setTextFormat(Qt::PlainText);
+    statusBar()->addPermanentWidget(lineNumberLabel);
 }
 
 void MainWindow::readSettings()

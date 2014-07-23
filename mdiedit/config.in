@@ -1,0 +1,4 @@
+#ifndef __CONFIG_H__
+#define TRANSLATIONS_PATH "${CMAKE_INSTALL_PREFIX}/share/mdiedit/translations-qm"
+#define __CONFIG_H__
+#endif
