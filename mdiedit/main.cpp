@@ -58,6 +58,7 @@ int main(int argn, char *argv[])
 		fileList << argv[i];
 	}
 	MainWindow mainWin;
+	mainWin.setWindowIcon(QIcon(ICON_PATH "/mdiedit.svg"));
 	mainWin.show();
 	QString file;
 	foreach(file, fileList)
