@@ -32,6 +32,7 @@ set(ICON_FILES
 
 set(TRANSLATIONS_FILES
     translations-qm/mdiedit-es.qm
+    translations-qm/mdiedit-ru.qm
 )
 
 # Config file
