@@ -49,9 +49,15 @@ int main(int argn, char *argv[])
 	QApplication app(argn, argv);
 	
 	QTranslator qtTranslator;
-    qtTranslator.load(QString(TRANSLATIONS_PATH "/mdiedit-") + QLocale::system().name()+ QString(".qm"));
-    app.installTranslator(&qtTranslator);
+	qtTranslator.load(QString(TRANSLATIONS_PATH "/mdiedit-") + QLocale::system().name()+ QString(".qm"));
+	app.installTranslator(&qtTranslator);
+	
+	// qt translation for default dialogs (QFileDialog) and so on
+     QTranslator qtTranslator2;
+	qtTranslator2.load("qt_" + QLocale::system().name(), QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+	app.installTranslator(&qtTranslator2);
 
+	qDebug() << QLibraryInfo::location(QLibraryInfo::TranslationsPath) << "  " << QLocale::system().name();
 	
 	QStringList fileList;
 	for(int i=1;i<argn;i++) {
