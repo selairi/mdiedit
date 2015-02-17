@@ -2,20 +2,20 @@ cmake_minimum_required( VERSION 2.6 )
 project(mdiedit)
 
 set(H_FILES
-	document.h  finddialog.h  mainwindow.h  mdichild.h
+	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h
 )
 
 set(MOC_FILES
-	document.h  finddialog.h  mainwindow.h  mdichild.h
+	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h
 )
 
 set(CPP_FILES
-    document.cpp  finddialog.cpp  main.cpp  mainwindow.cpp  mdichild.cpp
+    document.cpp  finddialog.cpp  main.cpp  mainwindow.cpp  mdichild.cpp snipplesdialog.cpp
 )
 
 
 set(UI_FILES
-	find.ui
+	find.ui snipples.ui
 )
 
 set(QRC_FILES

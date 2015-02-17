@@ -42,6 +42,7 @@
 
 #include <QMainWindow>
 #include <QTextDocument>
+#include <QHash>
 
 #include "finddialog.h"
 
@@ -88,6 +89,7 @@ private slots:
     void goToLine();
     void wordwrapMode(MdiChild *child = NULL);
     void showFontDialog();
+    void showSnipplesDialog();
     void about();
     void updateMenus();
     void updateWindowMenu();
@@ -145,6 +147,7 @@ private:
     QAction *goToLineAct;
     QAction *wordwrapAct;
     QAction *fontAct;
+    QAction *snipplesAct;
     
     QAction *newViewAct;
     QAction *closeAct;
@@ -160,6 +163,9 @@ private:
     QAction *aboutQtAct;
     
     QLabel *lineNumberLabel;
+    
+    QHash<QString,QString> snipples;
+    bool snipplesActivateOk;
 };
 
 #endif

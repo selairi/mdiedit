@@ -42,6 +42,7 @@
 
 #include <QPlainTextEdit>
 #include <QStringListModel>
+#include <QHash>
 #include "document.h"
 
 class MdiChild : public QPlainTextEdit
@@ -61,6 +62,10 @@ public:
     void setView(MdiChild *mdiChild);
     Document *view();
     void completion();
+
+
+    QHash<QString,QString> *snipples;
+    bool *snipplesActivateOk;
 
 signals:
 	void reparentDocument(Document *);
@@ -82,6 +87,7 @@ private:
     bool isUntitled;
     bool autoindent;
     Document *_document;
+
 };
 
 #endif

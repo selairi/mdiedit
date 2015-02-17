@@ -51,10 +51,12 @@
 
 #include "mainwindow.h"
 #include "mdichild.h"
+#include "snipplesdialog.h"
 
 MainWindow::MainWindow()
 {
-	lineNumberLabel = NULL;
+    snipplesActivateOk = true;
+    lineNumberLabel = NULL;
     mdiArea = new QMdiArea;
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -339,6 +341,17 @@ void MainWindow::showFontDialog()
 	}
 }
 
+void MainWindow::showSnipplesDialog()
+{
+	SnipplesDialog *dialog = new SnipplesDialog(&snipples, snipplesActivateOk, this);
+	int ok = dialog->exec();
+	if(QDialog::Rejected==ok)
+		return;
+	snipples = dialog->snipples;
+	snipplesActivateOk = dialog->getActivateSnipples();
+	delete dialog;
+}
+
 void MainWindow::replace()
 {
     
@@ -573,6 +586,8 @@ MdiChild *MainWindow::createMdiChild()
 
     wordwrapMode(child);
     setFont(child);
+    child->snipples=&snipples;
+    child->snipplesActivateOk=&snipplesActivateOk;
     return child;
 }
 
@@ -642,6 +657,9 @@ void MainWindow::createActions()
     redoAct = new QAction(QIcon::fromTheme("edit-redo"), tr("&Redo"), this);
     redoAct->setShortcuts(QKeySequence::Redo);
     connect(redoAct, SIGNAL(triggered()), this, SLOT(redo()));
+    
+    snipplesAct = new QAction( tr("Text shortcuts"), this);
+    connect(snipplesAct, SIGNAL(triggered()), this, SLOT(showSnipplesDialog()));
     
     wordwrapAct = new QAction( tr("&Wordwrap"), this);
     wordwrapAct->setCheckable(true);
@@ -750,6 +768,7 @@ void MainWindow::createMenus()
     editMenu->addAction(findNextAct);
     editMenu->addAction(goToLineAct);
     editMenu->addSeparator();
+    editMenu->addAction(snipplesAct);
     editMenu->addAction(wordwrapAct);
     editMenu->addAction(fontAct);
 
@@ -803,6 +822,13 @@ void MainWindow::readSettings()
     font.fromString(settings.value("font").toString());
     setFont();
     settings.endGroup();
+    snipplesActivateOk = settings.value("snipplesActivateOk").toBool();
+    settings.beginGroup("snipples");
+    QStringList keys = settings.childKeys();
+     foreach(QString key, keys) {
+         snipples[key]=settings.value(key).toString();
+    }
+    settings.endGroup();
 }
 
 void MainWindow::writeSettings()
@@ -816,6 +842,14 @@ void MainWindow::writeSettings()
     settings.beginGroup("format");
     settings.setValue("wordwrap", wordwrapAct->isChecked());
     settings.setValue("font", font.toString());
+    settings.endGroup();
+    settings.setValue("snipplesActivateOk", snipplesActivateOk);
+    settings.beginGroup("snipples");
+    QHash<QString, QString>::const_iterator i = snipples.constBegin();
+    while (i != snipples.constEnd()) {
+        settings.setValue(i.key(), i.value());
+        ++i;
+    }
     settings.endGroup();
 }
 
