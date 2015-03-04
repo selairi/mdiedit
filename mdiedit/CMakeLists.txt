@@ -2,20 +2,20 @@ cmake_minimum_required( VERSION 2.6 )
 project(mdiedit)
 
 set(H_FILES
-	document.h  finddialog.h  mainwindow.h  mdichild.h
+	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h
 )
 
 set(MOC_FILES
-	document.h  finddialog.h  mainwindow.h  mdichild.h
+	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h
 )
 
 set(CPP_FILES
-    document.cpp  finddialog.cpp  main.cpp  mainwindow.cpp  mdichild.cpp
+    document.cpp  finddialog.cpp  main.cpp  mainwindow.cpp  mdichild.cpp snipplesdialog.cpp
 )
 
 
 set(UI_FILES
-	find.ui
+	find.ui snipples.ui
 )
 
 set(QRC_FILES
@@ -26,12 +26,13 @@ set(DESKTOP_FILES
 	desktop_files/mdiedit.desktop
 )
 
-set(ICON_FILES
+set(APP_ICON_FILES
 	desktop_files/mdiedit.svg
 )
 
 set(TRANSLATIONS_FILES
     translations-qm/mdiedit-es.qm
+    translations-qm/mdiedit-ru.qm
 )
 
 # Config file
@@ -118,7 +119,7 @@ endif()
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 install(FILES ${CONFIG_FILES} DESTINATION ${APP_SHARE_DIR})
 install(FILES ${DESKTOP_FILES} DESTINATION share/applications)
-install(FILES ${ICON_FILES} DESTINATION share/icons)
+install(FILES ${APP_ICON_FILES} DESTINATION share/icons/hicolor/scalable/apps)
 install(FILES ${TRANSLATIONS_FILES} DESTINATION share/mdiedit/translations-qm)
 
 # building tarball with CPack -------------------------------------------------

@@ -1,7 +1,6 @@
 /****************************************************************************
 **
-**   Copyright (C) 2014 P.L. Lucas
-**   Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+**   Copyright (C) 2015 P.L. Lucas
 **
 **
 ** LICENSE: BSD
@@ -16,7 +15,7 @@
 **     notice, this list of conditions and the following disclaimer in
 **     the documentation and/or other materials provided with the
 **     distribution.
-**   * Neither the name of developers or companies in the above copyright, Digia Plc and its 
+**   * Neither the name of developers or companies in the above copyright and its 
 **     Subsidiary(-ies) nor the names of its contributors may be used to 
 **     endorse or promote products derived from this software without 
 **     specific prior written permission.
@@ -37,57 +36,33 @@
 **
 ****************************************************************************/
 
-#ifndef MDICHILD_H
-#define MDICHILD_H
+#ifndef SNIPPLESDIALOG_H
+#define SNIPPLESDIALOG_H
 
-#include <QPlainTextEdit>
-#include <QStringListModel>
+#include <QDialog>
+#include <QTextDocument>
 #include <QHash>
-#include "document.h"
 
-class MdiChild : public QPlainTextEdit
-{
+#include "ui_snipples.h"
+
+class SnipplesDialog : public QDialog {
     Q_OBJECT
 
 public:
-    MdiChild();
-
-    void newFile();
-    bool loadFile(const QString &fileName);
-    bool save();
-    bool saveAs();
-    bool saveFile(const QString &fileName);
-    QString userFriendlyCurrentFile();
-    QString currentFile() { return _document->fileName(); }
-    void setView(MdiChild *mdiChild);
-    Document *view();
-    void completion();
-
-
-    QHash<QString,QString> *snipples;
-    bool *snipplesActivateOk;
-
-signals:
-	void reparentDocument(Document *);
-
-public slots:
-    void setCurrentFile(QString fileName);
-
-protected:
-    void closeEvent(QCloseEvent *event);
-    void keyPressEvent(QKeyEvent * e);
+    SnipplesDialog(QHash<QString,QString> *snipples, bool activate, QWidget * parent = 0);
+    QHash<QString,QString> snipples;
+    bool getActivateSnipples();
 
 private slots:
-    void documentWasModified();
-    void documentContentsChanged();
+    void add();
+    void remove();
+    void open();
+    void save();
+    void changePage(QListWidgetItem*current,QListWidgetItem*previous);
+    void textChanged();
 
 private:
-    bool maybeSave();
-    QString strippedName(const QString &fullFileName);
-    bool isUntitled;
-    bool autoindent;
-    Document *_document;
-
+    Ui::Snipples ui;
 };
 
 #endif

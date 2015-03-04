@@ -55,6 +55,8 @@ MdiChild::MdiChild()
 	setWindowIcon(QIcon::fromTheme("text-x-generic"));
 	isUntitled = true;
 	autoindent = true;
+	snipples=NULL;
+	snipplesActivateOk=NULL;
 	setTabStopWidth(20);
 	setCursorWidth(3);
 	connect(document(), SIGNAL(contentsChanged()),
@@ -80,7 +82,18 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
         }
     }
     
-    if(e->key() == Qt::Key_Tab && e->modifiers() == Qt::NoModifier && textCursor().hasSelection()) {
+     if(snipplesActivateOk && *snipplesActivateOk && snipples && e->key() == Qt::Key_Tab && e->modifiers() == Qt::NoModifier &&  ! textCursor().hasSelection()) {
+         QTextCursor cursor = textCursor();
+         QTextCursor cursorOriginal = textCursor();
+         cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
+         QString text = cursor.selectedText();
+         if(snipples->contains(text)) {
+             setTextCursor(cursor);
+         	insertPlainText(snipples->value(text));
+         	return;
+         }
+     }
+     else if(e->key() == Qt::Key_Tab && e->modifiers() == Qt::NoModifier && textCursor().hasSelection()) {
     	QTextCursor cursor = textCursor();
     	int start = cursor.selectionStart() ;
     	int end = cursor.selectionEnd() ;
