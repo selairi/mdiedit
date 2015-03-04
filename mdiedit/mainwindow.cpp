@@ -157,7 +157,11 @@ void MainWindow::open(QString fileName)
 
 void MainWindow::open()
 {
-	QStringList fileNames = QFileDialog::getOpenFileNames(this);
+	QString _path;
+	 if (activeMdiChild()) {
+	 	_path = activeMdiChild()->currentFile();
+	 }
+	QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open"), _path);
 	QString fileName;
 	foreach(fileName, fileNames)
 		open(fileName);
