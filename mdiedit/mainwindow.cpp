@@ -221,7 +221,7 @@ void MainWindow::completion()
 	
 		QDialog dialog(this);
 		dialog.setWindowTitle(tr("Completer"));
-		QHBoxLayout *layout = new QHBoxLayout(&dialog);
+		QVBoxLayout *layout = new QVBoxLayout(&dialog);
 		dialog.setLayout(layout);
 		
 		QCompleter *completer = new QCompleter(&dialog);
@@ -251,11 +251,15 @@ void MainWindow::completion()
 		} else
 			text = QString();
 		
+		
+		
 		QLineEdit *line = new QLineEdit(&dialog);
 		line->setText(text);
 		line->setCompleter(completer);
 		layout->addWidget(line);
 		connect(line, SIGNAL(returnPressed()), &dialog, SLOT(accept()));
+		completer->setCompletionPrefix(text);
+		QTimer::singleShot(500, completer, SLOT(complete()));
 		int ok = dialog.exec();
 		if(ok == QDialog::Accepted)
 			activeChild->insertPlainText(line->text());
