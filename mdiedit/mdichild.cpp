@@ -82,7 +82,7 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
         }
     }
     
-     if(snipplesActivateOk && *snipplesActivateOk && snipples && e->key() == Qt::Key_Tab && e->modifiers() == Qt::NoModifier &&  ! textCursor().hasSelection()) {
+     if(snipplesActivateOk!=NULL && *snipplesActivateOk && snipples!=NULL && e->key() == Qt::Key_Tab && e->modifiers() == Qt::NoModifier &&  ! textCursor().hasSelection()) {
          QTextCursor cursor = textCursor();
          QTextCursor cursorOriginal = textCursor();
          cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);

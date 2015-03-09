@@ -89,14 +89,12 @@ void MainWindow::showLineNumber() {
 	// if(time.restart()<100)
 	// 	return;
 	MdiChild *child = activeMdiChild();
-    if (child && lineNumberLabel) {
-        int lineno = child->textCursor().blockNumber();
-        int columnno = child->textCursor().positionInBlock();
-        QString str = QString(tr("%1,%2")).arg(++lineno).arg(++columnno);
-        //statusBar()->showMessage(str);
-        lineNumberLabel->setText(str);
-        //qDebug() << str;
-    }
+	if (child && lineNumberLabel) {
+		int lineno = child->textCursor().blockNumber();
+		int columnno = child->textCursor().positionInBlock();
+		QString str = QString(tr("%1,%2")).arg(++lineno).arg(++columnno);
+		lineNumberLabel->setText(str);
+		}
 }
 
 void MainWindow::updateMdiChild(QMdiSubWindow *) {
@@ -411,14 +409,15 @@ void MainWindow::replaceAll()
 
 void MainWindow::goToLine()
 {
-	if (activeMdiChild()) {
-		QTextCursor cursor = activeMdiChild()->textCursor();
+	MdiChild *child = activeMdiChild();
+	if (child) {
+		QTextCursor cursor = child->textCursor();
 		bool ok;
 		int lineno = QInputDialog::getInt(this, tr("Go to line"), tr("Line number"), cursor.blockNumber()+1, 1, 2147483647, 1, &ok);
-		cursor.movePosition(QTextCursor::Start);
 		if(ok) {
+			cursor.movePosition(QTextCursor::Start);
 			cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, lineno-1);
-			activeMdiChild()->setTextCursor(cursor);
+			child->setTextCursor(cursor);
 		}
 	}
 }
@@ -579,19 +578,17 @@ void MainWindow::updateWindowMenu()
 MdiChild *MainWindow::createMdiChild()
 {
     MdiChild *child = new MdiChild;
+    child->snipples=&snipples;
+    child->snipplesActivateOk=&snipplesActivateOk;
     mdiArea->addSubWindow(child);
 
-    connect(child, SIGNAL(copyAvailable(bool)),
-            cutAct, SLOT(setEnabled(bool)));
-    connect(child, SIGNAL(copyAvailable(bool)),
-            copyAct, SLOT(setEnabled(bool)));
-    connect(child, SIGNAL(reparentDocument(Document *)),
-            this, SLOT(reparentDocument(Document *)));
+    connect(child, SIGNAL(copyAvailable(bool)), cutAct, SLOT(setEnabled(bool)));
+    connect(child, SIGNAL(copyAvailable(bool)), copyAct, SLOT(setEnabled(bool)));
+    connect(child, SIGNAL(reparentDocument(Document *)), this, SLOT(reparentDocument(Document *)));
 
     wordwrapMode(child);
     setFont(child);
-    child->snipples=&snipples;
-    child->snipplesActivateOk=&snipplesActivateOk;
+    
     return child;
 }
 
