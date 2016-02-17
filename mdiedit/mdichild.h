@@ -66,6 +66,7 @@ public:
 
     QHash<QString,QString> *snipples;
     bool *snipplesActivateOk;
+    bool *replaceTabsBySpacesOk;
 
 signals:
 	void reparentDocument(Document *);

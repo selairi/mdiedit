@@ -90,6 +90,7 @@ private slots:
     void wordwrapMode(MdiChild *child = NULL);
     void showFontDialog();
     void showSnipplesDialog();
+    void replaceTabsBySpaces();
     void about();
     void updateMenus();
     void updateWindowMenu();
@@ -148,6 +149,7 @@ private:
     QAction *wordwrapAct;
     QAction *fontAct;
     QAction *snipplesAct;
+    QAction *replaceTabsBySpacesAct;
     
     QAction *newViewAct;
     QAction *closeAct;
@@ -166,6 +168,7 @@ private:
     
     QHash<QString,QString> snipples;
     bool snipplesActivateOk;
+    bool replaceTabsBySpacesOk;
 };
 
 #endif

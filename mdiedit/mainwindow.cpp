@@ -56,6 +56,7 @@
 MainWindow::MainWindow()
 {
     snipplesActivateOk = true;
+    replaceTabsBySpacesOk = false;
     lineNumberLabel = NULL;
     mdiArea = new QMdiArea;
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -582,8 +583,9 @@ void MainWindow::updateWindowMenu()
 MdiChild *MainWindow::createMdiChild()
 {
     MdiChild *child = new MdiChild;
-    child->snipples=&snipples;
-    child->snipplesActivateOk=&snipplesActivateOk;
+    child->snipples = &snipples;
+    child->snipplesActivateOk = &snipplesActivateOk;
+    child->replaceTabsBySpacesOk = &replaceTabsBySpacesOk;
     mdiArea->addSubWindow(child);
 
     connect(child, SIGNAL(copyAvailable(bool)), cutAct, SLOT(setEnabled(bool)));
@@ -665,6 +667,10 @@ void MainWindow::createActions()
     
     snipplesAct = new QAction( tr("Text shortcuts"), this);
     connect(snipplesAct, SIGNAL(triggered()), this, SLOT(showSnipplesDialog()));
+    
+    replaceTabsBySpacesAct = new QAction( tr("Replace tabs by spaces"), this);
+    replaceTabsBySpacesAct->setCheckable(true);
+    connect(replaceTabsBySpacesAct, SIGNAL(changed()), this, SLOT(replaceTabsBySpaces()));
     
     wordwrapAct = new QAction( tr("&Wordwrap"), this);
     wordwrapAct->setCheckable(true);
@@ -774,6 +780,7 @@ void MainWindow::createMenus()
     editMenu->addAction(goToLineAct);
     editMenu->addSeparator();
     editMenu->addAction(snipplesAct);
+    editMenu->addAction(replaceTabsBySpacesAct);
     editMenu->addAction(wordwrapAct);
     editMenu->addAction(fontAct);
 
@@ -827,6 +834,8 @@ void MainWindow::readSettings()
     font.fromString(settings.value("font").toString());
     setFont();
     settings.endGroup();
+    replaceTabsBySpacesOk = settings.value("replaceTabsBySpacesOk").toBool();
+    replaceTabsBySpacesAct->setChecked(replaceTabsBySpacesOk);
     snipplesActivateOk = settings.value("snipplesActivateOk").toBool();
     settings.beginGroup("snipples");
     QStringList keys = settings.childKeys();
@@ -848,6 +857,7 @@ void MainWindow::writeSettings()
     settings.setValue("wordwrap", wordwrapAct->isChecked());
     settings.setValue("font", font.toString());
     settings.endGroup();
+    settings.setValue("replaceTabsBySpacesOk", replaceTabsBySpacesOk);
     settings.setValue("snipplesActivateOk", snipplesActivateOk);
     settings.beginGroup("snipples");
     QHash<QString, QString>::const_iterator i = snipples.constBegin();
@@ -890,4 +900,9 @@ void MainWindow::setActiveSubWindow(QWidget *window)
     if (!window)
         return;
     mdiArea->setActiveSubWindow(qobject_cast<QMdiSubWindow *>(window));
+}
+
+void MainWindow::replaceTabsBySpaces()
+{
+    replaceTabsBySpacesOk = replaceTabsBySpacesAct->isChecked();
 }

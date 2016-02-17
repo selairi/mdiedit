@@ -57,7 +57,8 @@ MdiChild::MdiChild()
 	autoindent = true;
 	snipples=NULL;
 	snipplesActivateOk=NULL;
-	setTabStopWidth(20);
+	replaceTabsBySpacesOk = NULL;
+	//setTabStopWidth(20);
 	setCursorWidth(3);
 	connect(document(), SIGNAL(contentsChanged()),
 		this, SLOT(documentContentsChanged()));
@@ -100,9 +101,15 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
     	cursor.setPosition(end);
     	cursor.setPosition(start, QTextCursor::KeepAnchor);
     	cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
-    	QString text = "\t" + cursor.selectedText();
+    	QString text = cursor.selectedText();
     	text.replace(QChar(QChar::ParagraphSeparator), "\n");
-    	text.replace(QChar('\n'), "\n\t");
+    	if(replaceTabsBySpacesOk!=NULL && *replaceTabsBySpacesOk) {
+    	    text = "    " + text;
+    	    text.replace(QChar('\n'), "\n    ");
+    	} else {
+    	    text = "\t" + text;
+    	    text.replace(QChar('\n'), "\n\t");
+    	}
     	start = cursor.selectionStart() ;
     	cursor.insertText(text);
     	cursor.setPosition(start, QTextCursor::KeepAnchor);
@@ -122,6 +129,13 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
     	start = cursor.selectionStart() ;
     	cursor.insertText(text);
     	cursor.setPosition(start, QTextCursor::KeepAnchor);
+    	setTextCursor(cursor);
+    	return;
+    } else if(e->key() == Qt::Key_Tab && replaceTabsBySpacesOk!=NULL && *replaceTabsBySpacesOk) {
+    	QTextCursor cursor = textCursor();
+    	int spaces = 4 - cursor.columnNumber() % 4;
+    	for(;spaces>0;spaces--)
+    	    cursor.insertText(" ");
     	setTextCursor(cursor);
     	return;
     }
