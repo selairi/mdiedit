@@ -1,7 +1,6 @@
 /****************************************************************************
 **
 **   Copyright (C) 2014 P.L. Lucas
-**   Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 **
 **
 ** LICENSE: BSD
@@ -16,7 +15,7 @@
 **     notice, this list of conditions and the following disclaimer in
 **     the documentation and/or other materials provided with the
 **     distribution.
-**   * Neither the name of developers or companies in the above copyright, Digia Plc and its 
+**   * Neither the name of developers or companies in the above copyright and its 
 **     Subsidiary(-ies) nor the names of its contributors may be used to 
 **     endorse or promote products derived from this software without 
 **     specific prior written permission.
@@ -37,58 +36,16 @@
 **
 ****************************************************************************/
 
-#ifndef MDICHILD_H
-#define MDICHILD_H
+#ifndef TEXTBLOCKDATA_H
+#define TEXTBLOCKDATA_H
 
-#include <QPlainTextEdit>
-#include <QStringListModel>
-#include <QHash>
-#include "document.h"
+#include <QTextBlockUserData>
+#include <QList>
 
-class MdiChild : public QPlainTextEdit
-{
-    Q_OBJECT
-
+class TextBlockData : public QTextBlockUserData {
 public:
-    MdiChild();
-
-    void newFile();
-    bool loadFile(const QString &fileName);
-    bool save();
-    bool saveAs();
-    bool saveFile(const QString &fileName);
-    QString userFriendlyCurrentFile();
-    QString currentFile() { return _document->fileName(); }
-    void setView(MdiChild *mdiChild);
-    Document *view();
-    void completion();
-
-    QHash<QString,QString> *snipples;
-    bool *snipplesActivateOk;
-    bool *replaceTabsBySpacesOk;
-
-signals:
-    void reparentDocument(Document *);
-
-public slots:
-    void setCurrentFile(QString fileName);
-
-protected:
-    void closeEvent(QCloseEvent *event);
-    void keyPressEvent(QKeyEvent * e);
-    void focusOutEvent(QFocusEvent * event);
-
-private slots:
-    void documentWasModified();
-    void documentContentsChanged();
-
-private:
-    bool maybeSave();
-    QString strippedName(const QString &fullFileName);
-    bool isUntitled;
-    bool autoindent;
-    Document *_document;
-    QTextCursor firstLine;
+    TextBlockData();
+    QList <void*> views;
 };
 
 #endif

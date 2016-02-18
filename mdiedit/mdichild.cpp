@@ -46,6 +46,7 @@
 #endif
 
 #include "mdichild.h"
+#include "textblockdata.h"
 
 MdiChild::MdiChild()
 {
@@ -258,7 +259,23 @@ void MdiChild::closeEvent(QCloseEvent *event)
 void MdiChild::documentContentsChanged()
 {
     //setWindowModified(document()->isModified());
-    ensureCursorVisible();
+    if(hasFocus())
+        ensureCursorVisible();
+    else
+    {
+        // Ensure first line visible if focus has been lost (multiview mode).
+        int moveToPosition = firstLine.position() - firstVisibleBlock().position();
+        QTextCursor actual = textCursor();
+        QTextCursor cursor = textCursor();
+        cursor.setPosition(firstLine.position());
+        setTextCursor(cursor);
+        if(moveToPosition>0)
+        {
+            while(firstLine.block() != firstVisibleBlock() && textCursor().block().blockNumber() < blockCount()-1 )
+                moveCursor(QTextCursor::Down);
+        }
+        setTextCursor(actual);
+    }
 }
 
 void MdiChild::documentWasModified()
@@ -304,5 +321,16 @@ void MdiChild::setCurrentFile(QString fileName)
 QString MdiChild::strippedName(const QString &fullFileName)
 {
     return QFileInfo(fullFileName).fileName();
+}
+
+void MdiChild::focusOutEvent(QFocusEvent * event)
+{
+    if(event->lostFocus())
+    {
+        QTextCursor cursor = textCursor();
+        cursor.setPosition(firstVisibleBlock().position());
+        firstLine = cursor;
+    }
+    QPlainTextEdit::focusOutEvent(event);
 }
 
