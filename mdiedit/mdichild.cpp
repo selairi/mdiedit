@@ -401,9 +401,13 @@ void MdiChild::blockMode(bool enableOk)
             cursor.setPosition(textCursor().selectionStart());
             blockModeData.lineNumber = blockModeData.startLine = cursor.blockNumber();
             setTextCursor(cursor);
+            emit showMessage(tr("Block mode: Enabled."));
         }
         else
+        {
             blockModeData.enabled = false;
+            emit showMessage(tr("Block mode: Disabled. No selected text."));
+        }
     }
 }
 

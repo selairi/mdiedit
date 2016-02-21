@@ -591,6 +591,7 @@ MdiChild *MainWindow::createMdiChild()
     connect(child, SIGNAL(copyAvailable(bool)), cutAct, SLOT(setEnabled(bool)));
     connect(child, SIGNAL(copyAvailable(bool)), copyAct, SLOT(setEnabled(bool)));
     connect(child, SIGNAL(reparentDocument(Document *)), this, SLOT(reparentDocument(Document *)));
+    connect(child, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
 
     wordwrapMode(child);
     setFont(child);
@@ -919,4 +920,9 @@ void MainWindow::blockMode()
     MdiChild *child = activeMdiChild();
     if (child)
         child->blockMode();
+}
+
+void MainWindow::showMessage(QString text)
+{
+    statusBar()->showMessage(text, 10000);
 }

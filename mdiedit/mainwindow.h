@@ -105,6 +105,7 @@ private slots:
     void minimizeAllSubWindows();
     void reparentDocument(Document *doc);
     void toggleTabbedViewMode();
+    void showMessage(QString text);
 
 private:
     FindDialog *findDialog;

@@ -72,6 +72,7 @@ public:
 
 signals:
     void reparentDocument(Document *);
+    void showMessage(QString);
 
 public slots:
     void setCurrentFile(QString fileName);
