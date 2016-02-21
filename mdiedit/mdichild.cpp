@@ -51,6 +51,8 @@
 MdiChild::MdiChild()
 {
 	_document = new Document(this);
+	docLayout = new PlainTextDocumentLayout(_document);
+	_document->setDocumentLayout(docLayout);
 	setDocument(_document);
 	setAttribute(Qt::WA_DeleteOnClose);
 	setWindowIcon(QIcon::fromTheme("text-x-generic"));
@@ -67,6 +69,7 @@ MdiChild::MdiChild()
 		this, SLOT(documentWasModified()));
 	connect(document(), SIGNAL(fileNameChanged(QString)),
 		this, SLOT(setCurrentFile(QString)));
+	connect(docLayout, SIGNAL(docChanged(int, int, int)), this, SLOT(documentChanged(int, int, int)));
 }
 
 void MdiChild::keyPressEvent(QKeyEvent * e)
@@ -256,11 +259,61 @@ void MdiChild::closeEvent(QCloseEvent *event)
     }
 }
 
+void MdiChild::documentChanged(int position, int charsRemoved, int charsAdded)
+{
+    if(blockModeData.enabled)
+    {
+        if(blockModeData.lineNumber == textCursor().blockNumber())
+        {
+            QTextCursor cursor = textCursor();
+            cursor.setPosition(position);
+            cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, charsAdded);
+            QString text = cursor.selectedText();
+            int pos = position - cursor.block().position();
+            disconnect(docLayout, SIGNAL(docChanged(int, int, int)), this, SLOT(documentChanged(int, int, int)));
+         	  disconnect(document(), SIGNAL(contentsChanged()), this, SLOT(documentContentsChanged()));
+            for(int i = blockModeData.startLine+1; i<=blockModeData.endLine; i++)
+            {
+                // Set cursor position
+                int line = cursor.blockNumber();
+                while(line < _document->lastBlock().blockNumber() && line < i)
+                {
+                    cursor.setPosition(cursor.block().next().position());
+                    line = cursor.blockNumber();
+                }
+                while(line > 0 && line > i)
+                {
+                    cursor.setPosition(cursor.block().previous().position());
+                    line = cursor.blockNumber();
+                }
+                int startPosition = pos;
+                if( pos >= cursor.block().length() )
+                    //startPosition = cursor.block().length() - 1;
+                    continue;
+                int charsCount = charsRemoved;
+                if( (startPosition + charsRemoved) >= cursor.block().length() )
+                    //charsCount = cursor.block().length() - startPosition - 1;
+                    continue;
+                cursor.setPosition(cursor.block().position() + startPosition);
+                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, charsCount);
+                cursor.insertText(text);
+            }
+            connect(docLayout, SIGNAL(docChanged(int, int, int)), this, SLOT(documentChanged(int, int, int)));
+            connect(document(), SIGNAL(contentsChanged()), this, SLOT(documentContentsChanged()));
+        }
+        else
+              blockMode(false);
+    }
+}
+
 void MdiChild::documentContentsChanged()
 {
     //setWindowModified(document()->isModified());
     if(hasFocus())
+    {
         ensureCursorVisible();
+        
+    }
     else
     {
         // Ensure first line visible if focus has been lost (multiview mode).
@@ -334,3 +387,33 @@ void MdiChild::focusOutEvent(QFocusEvent * event)
     QPlainTextEdit::focusOutEvent(event);
 }
 
+void MdiChild::blockMode(bool enableOk)
+{
+    blockModeData.enabled = enableOk;
+    blockModeData.lineNumber = -1;
+    if(enableOk)
+    {
+        QTextCursor cursor = textCursor();
+        if( cursor.hasSelection() )
+        {
+            cursor.setPosition(cursor.selectionEnd());
+            blockModeData.endLine = cursor.blockNumber();
+            cursor.setPosition(textCursor().selectionStart());
+            blockModeData.lineNumber = blockModeData.startLine = cursor.blockNumber();
+            setTextCursor(cursor);
+        }
+        else
+            blockModeData.enabled = false;
+    }
+}
+
+PlainTextDocumentLayout::PlainTextDocumentLayout(QTextDocument *parent):QPlainTextDocumentLayout(parent)
+{
+
+}
+
+void PlainTextDocumentLayout::documentChanged(int position, int charsRemoved, int charsAdded)
+{
+    QPlainTextDocumentLayout::documentChanged(position, charsRemoved, charsAdded);
+    emit docChanged(position, charsRemoved, charsAdded);
+}

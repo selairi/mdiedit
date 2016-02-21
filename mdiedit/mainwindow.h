@@ -85,6 +85,7 @@ private slots:
     bool findNext();
     void replace();
     void replaceAll();
+    void blockMode();
     void showFindDialog();
     void goToLine();
     void wordwrapMode(MdiChild *child = NULL);
@@ -142,6 +143,7 @@ private:
     QAction *undoAct;
     QAction *redoAct;
     QAction *selectAllAct;
+    QAction *blockModeAct;
     QAction *completionAct;
     QAction *findAct;
     QAction *findNextAct;

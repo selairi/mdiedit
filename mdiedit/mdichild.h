@@ -45,6 +45,8 @@
 #include <QHash>
 #include "document.h"
 
+class PlainTextDocumentLayout;
+
 class MdiChild : public QPlainTextEdit
 {
     Q_OBJECT
@@ -62,6 +64,7 @@ public:
     void setView(MdiChild *mdiChild);
     Document *view();
     void completion();
+    void blockMode(bool enableOk = true);
 
     QHash<QString,QString> *snipples;
     bool *snipplesActivateOk;
@@ -81,6 +84,7 @@ protected:
 private slots:
     void documentWasModified();
     void documentContentsChanged();
+    void documentChanged(int position, int charsRemoved, int charsAdded);
 
 private:
     bool maybeSave();
@@ -88,7 +92,28 @@ private:
     bool isUntitled;
     bool autoindent;
     Document *_document;
-    QTextCursor firstLine;
+    QTextCursor firstLine; // First line show in view mode
+    PlainTextDocumentLayout *docLayout;
+    
+    struct BlockMode {
+        bool enabled;
+        int lineNumber;
+        int startLine;
+        int endLine;
+    } blockModeData;
+};
+
+class PlainTextDocumentLayout: public QPlainTextDocumentLayout
+{
+Q_OBJECT
+public:
+    PlainTextDocumentLayout(QTextDocument *parent);
+
+signals:
+    void docChanged(int position, int charsRemoved, int charsAdded);
+
+protected:
+    virtual void documentChanged(int position, int charsRemoved, int charsAdded);
 };
 
 #endif

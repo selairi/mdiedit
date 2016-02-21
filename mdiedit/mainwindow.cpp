@@ -644,7 +644,13 @@ void MainWindow::createActions()
     undoAct = new QAction( QIcon::fromTheme("edit-undo"), tr("&Undo"), this);
     undoAct->setShortcuts(QKeySequence::Undo);
     connect(undoAct, SIGNAL(triggered()), this, SLOT(undo()));
-    
+
+    blockModeAct = new QAction( tr("&Block mode"), this);
+    QList<QKeySequence> keysBlockModeAct;
+    keysBlockModeAct << QKeySequence(Qt::CTRL+Qt::Key_B);
+    blockModeAct->setShortcuts(keysBlockModeAct);
+    connect(blockModeAct, SIGNAL(triggered()), this, SLOT(blockMode()));
+        
     findAct = new QAction(QIcon::fromTheme("edit-find"), tr("&Find"), this);
     findAct->setShortcuts(QKeySequence::Find);
     connect(findAct, SIGNAL(triggered()), this, SLOT(showFindDialog()));
@@ -772,6 +778,7 @@ void MainWindow::createMenus()
     editMenu->addAction(copyAct);
     editMenu->addAction(pasteAct);
     editMenu->addAction(selectAllAct);
+    editMenu->addAction(blockModeAct);
     editMenu->addSeparator();
     editMenu->addAction(completionAct);
     editMenu->addSeparator();
@@ -905,4 +912,11 @@ void MainWindow::setActiveSubWindow(QWidget *window)
 void MainWindow::replaceTabsBySpaces()
 {
     replaceTabsBySpacesOk = replaceTabsBySpacesAct->isChecked();
+}
+
+void MainWindow::blockMode()
+{
+    MdiChild *child = activeMdiChild();
+    if (child)
+        child->blockMode();
 }
