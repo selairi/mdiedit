@@ -832,6 +832,8 @@ void MainWindow::readSettings()
     QSize size = settings.value("size", QSize(400, 400)).toSize();
     move(pos);
     resize(size);
+    if(settings.value("maximized", false).toBool())
+        showMaximized();
     fileToolBar->setVisible(settings.value("fileToolBar", QVariant(true)).toBool());
     editToolBar->setVisible(settings.value("editToolBar", QVariant(true)).toBool());
     tabbedViewAct->setChecked(settings.value("tabbedViewMode", QVariant(false)).toBool());
@@ -858,6 +860,7 @@ void MainWindow::writeSettings()
     QSettings settings("QtProject", "MDI Edit");
     settings.setValue("pos", pos());
     settings.setValue("size", size());
+    settings.setValue("maximized", isMaximized());
     settings.setValue("fileToolBar", fileToolBar->isVisible());
     settings.setValue("editToolBar", editToolBar->isVisible());
     settings.setValue("tabbedViewMode", tabbedViewAct->isChecked());
