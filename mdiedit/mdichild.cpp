@@ -93,9 +93,12 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
          cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
          QString text = cursor.selectedText();
          if(snipples->contains(text)) {
-             setTextCursor(cursor);
-         	insertPlainText(snipples->value(text));
-         	return;
+            setTextCursor(cursor);
+            insertPlainText(snipples->value(text));
+            return;
+         } else if(replaceTabsBySpacesOk!=NULL && *replaceTabsBySpacesOk) {
+            insertSpacesAsTab(cursorOriginal);
+            return;
          }
      }
      else if(e->key() == Qt::Key_Tab && e->modifiers() == Qt::NoModifier && textCursor().hasSelection()) {
@@ -137,14 +140,19 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
     	return;
     } else if(e->key() == Qt::Key_Tab && replaceTabsBySpacesOk!=NULL && *replaceTabsBySpacesOk) {
     	QTextCursor cursor = textCursor();
-    	int spaces = 4 - cursor.columnNumber() % 4;
-    	for(;spaces>0;spaces--)
-    	    cursor.insertText(" ");
-    	setTextCursor(cursor);
+    	insertSpacesAsTab(cursor);
     	return;
     }
     
     QPlainTextEdit::keyPressEvent(e);
+}
+
+void MdiChild::insertSpacesAsTab(QTextCursor &cursor)
+{
+    int spaces = 4 - cursor.columnNumber() % 4;
+    for(;spaces>0;spaces--)
+        cursor.insertText(" ");
+    setTextCursor(cursor);
 }
 
 void MdiChild::newFile()

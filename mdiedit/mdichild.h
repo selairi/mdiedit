@@ -95,6 +95,7 @@ private:
     Document *_document;
     QTextCursor firstLine; // First line show in view mode
     PlainTextDocumentLayout *docLayout;
+    void insertSpacesAsTab(QTextCursor &cursor);
     
     struct BlockMode {
         bool enabled;
