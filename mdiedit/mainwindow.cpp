@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-**   Copyright (C) 2014 P.L. Lucas
+**   Copyright (C) 2016 P.L. Lucas
 **   Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 **
 **
@@ -504,7 +504,7 @@ void MainWindow::about()
 {
    QMessageBox::about(this, tr("About MDI Edit"),
             tr("Simple text editor based in the Qt MDI example.\n\n"
-            	"Copyright (C) 2014 P.L. Lucas\n"
+            	"Copyright (C) 2016 P.L. Lucas\n"
             	"License: 3-clause BSD"
             ));
 }
