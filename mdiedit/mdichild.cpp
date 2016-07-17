@@ -324,9 +324,9 @@ void MdiChild::documentContentsChanged()
     }
     else
     {
-        // Ensure first line visible if focus has been lost (multiview mode).
+        // Ensure first line visible if the focus has been lost (multiview mode).
         int moveToPosition = firstLine.position() - firstVisibleBlock().position();
-        QTextCursor actual = textCursor();
+        //QTextCursor actual = textCursor();
         QTextCursor cursor = textCursor();
         cursor.setPosition(firstLine.position());
         setTextCursor(cursor);
@@ -335,7 +335,7 @@ void MdiChild::documentContentsChanged()
             while(firstLine.block() != firstVisibleBlock() && textCursor().block().blockNumber() < blockCount()-1 )
                 moveCursor(QTextCursor::Down);
         }
-        setTextCursor(actual);
+        //setTextCursor(actual);
     }
 }
 
