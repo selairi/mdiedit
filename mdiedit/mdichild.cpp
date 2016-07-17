@@ -388,9 +388,14 @@ void MdiChild::focusOutEvent(QFocusEvent * event)
 {
     if(event->lostFocus())
     {
+        // Set values in order to control multi-view
         QTextCursor cursor = textCursor();
         cursor.setPosition(firstVisibleBlock().position());
         firstLine = cursor;
+        
+        // If focus is lost, block mode will be be deactivated.
+        // Blockmode could be out of control in multi-view mode. 
+        blockMode(false);
     }
     QPlainTextEdit::focusOutEvent(event);
 }
@@ -417,6 +422,8 @@ void MdiChild::blockMode(bool enableOk)
             emit showMessage(tr("Block mode: Disabled. No selected text."));
         }
     }
+    else
+        emit showMessage(tr("Block mode: Disabled."));
 }
 
 PlainTextDocumentLayout::PlainTextDocumentLayout(QTextDocument *parent):QPlainTextDocumentLayout(parent)
