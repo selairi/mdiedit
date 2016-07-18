@@ -44,6 +44,7 @@ Document::Document(QObject * parent): QTextDocument(parent)
 {
 	plainTextDocumentLayout = new QPlainTextDocumentLayout(this);
 	setDocumentLayout(plainTextDocumentLayout);
+	lastView = NULL;
 }
 
 void Document::setFileName(QString fileName)
@@ -55,4 +56,14 @@ void Document::setFileName(QString fileName)
 QString Document::fileName()
 {
 	return _fileName;
+}
+
+void Document::setLastView(QPlainTextEdit *view)
+{
+    lastView = view;
+}
+
+QPlainTextEdit *Document::getLastView()
+{
+    return lastView;
 }

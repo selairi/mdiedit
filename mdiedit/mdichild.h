@@ -81,6 +81,7 @@ protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent * e);
     void focusOutEvent(QFocusEvent * event);
+    void focusInEvent(QFocusEvent * event);
 
 private slots:
     void documentWasModified();

@@ -317,25 +317,16 @@ void MdiChild::documentChanged(int position, int charsRemoved, int charsAdded)
 void MdiChild::documentContentsChanged()
 {
     //setWindowModified(document()->isModified());
+    // Keep view position when multiview mode is used.
     if(hasFocus())
     {
         ensureCursorVisible();
-        
     }
-    else
+    else if(this != _document->getLastView() || firstLine.block() != firstVisibleBlock())
     {
-        // Ensure first line visible if the focus has been lost (multiview mode).
-        int moveToPosition = firstLine.position() - firstVisibleBlock().position();
-        //QTextCursor actual = textCursor();
-        QTextCursor cursor = textCursor();
-        cursor.setPosition(firstLine.position());
-        setTextCursor(cursor);
-        if(moveToPosition>0)
-        {
-            while(firstLine.block() != firstVisibleBlock() && textCursor().block().blockNumber() < blockCount()-1 )
-                moveCursor(QTextCursor::Down);
-        }
-        //setTextCursor(actual);
+        // Ensure the first line will be visible if the focus has been lost (multiview mode).
+        QTextBlock firstLineBlock = firstLine.block();
+        verticalScrollBar()->setSliderPosition(firstLineBlock.firstLineNumber());
     }
 }
 
@@ -398,6 +389,15 @@ void MdiChild::focusOutEvent(QFocusEvent * event)
         blockMode(false);
     }
     QPlainTextEdit::focusOutEvent(event);
+}
+
+void MdiChild::focusInEvent(QFocusEvent * event)
+{
+    if(event->gotFocus())
+    {
+        _document->setLastView(this);
+    }
+    QPlainTextEdit::focusInEvent(event);
 }
 
 void MdiChild::blockMode(bool enableOk)

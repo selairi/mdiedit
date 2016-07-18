@@ -262,8 +262,10 @@ void MainWindow::completion()
 		completer->setCompletionPrefix(text);
 		QTimer::singleShot(500, completer, SLOT(complete()));
 		int ok = dialog.exec();
-		if(ok == QDialog::Accepted)
+		if(ok == QDialog::Accepted) {
+			activeChild->setFocus(Qt::ActiveWindowFocusReason);
 			activeChild->insertPlainText(line->text());
+		}
 		else
 			activeChild->setTextCursor(cursorOriginal);
 		disconnect(line, SIGNAL(returnPressed()), &dialog, SLOT(accept()));

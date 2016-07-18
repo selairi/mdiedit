@@ -47,6 +47,10 @@ public:
 	Document(QObject * parent = 0);
 	void setFileName(QString fileName);
 	QString fileName();
+	/**Sets view that has got the focus.
+	 */
+	void setLastView(QPlainTextEdit *view);
+	QPlainTextEdit *getLastView();
 
 signals:
 	void fileNameChanged(QString fileName);
@@ -54,5 +58,5 @@ signals:
 private:
 	QString _fileName;
 	QPlainTextDocumentLayout *plainTextDocumentLayout;
-
+	QPlainTextEdit *lastView;
 };    
