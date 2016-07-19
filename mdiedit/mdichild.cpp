@@ -78,7 +78,7 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
     if(autoindent) {
         if(e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) {
             QTextCursor cursor = textCursor();
-            QString line = cursor.block().text();
+            QString line = cursor.block().text().left(cursor.positionInBlock());
             int pos = line.indexOf(regExp);
             QString spaces = line.left(pos);
             QPlainTextEdit::keyPressEvent(e);
