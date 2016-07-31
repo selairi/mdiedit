@@ -138,6 +138,18 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
     	cursor.setPosition(start, QTextCursor::KeepAnchor);
     	setTextCursor(cursor);
     	return;
+    } else if(e->key() == Qt::Key_Backtab && e->modifiers() == Qt::ShiftModifier) {
+    	QTextCursor cursor = textCursor();
+    	if( replaceTabsBySpacesOk!=NULL && *replaceTabsBySpacesOk ) {   
+        	   removeSpacesAsTab(cursor);
+    	} else {
+    	   cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
+    	   if( cursor.selectedText() == "\t" ) {
+    	       cursor.removeSelectedText();
+    	       setTextCursor(cursor);
+    	   }
+    	}
+    	return;
     } else if(e->key() == Qt::Key_Tab && replaceTabsBySpacesOk!=NULL && *replaceTabsBySpacesOk) {
     	QTextCursor cursor = textCursor();
     	insertSpacesAsTab(cursor);
@@ -153,6 +165,22 @@ void MdiChild::insertSpacesAsTab(QTextCursor &cursor)
     for(;spaces>0;spaces--)
         cursor.insertText(" ");
     setTextCursor(cursor);
+}
+
+
+void MdiChild::removeSpacesAsTab(QTextCursor &cursor)
+{
+    QRegExp regex(" +");
+    int spaces = cursor.columnNumber() % 4;
+    if( spaces == 0 )
+        spaces = 4;    
+    if( cursor.columnNumber() < 4 )
+        spaces = cursor.columnNumber();
+    cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, spaces);
+    if( regex.exactMatch(cursor.selectedText()) ) {
+        cursor.removeSelectedText();
+        setTextCursor(cursor);
+    }
 }
 
 void MdiChild::newFile()
