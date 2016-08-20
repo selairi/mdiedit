@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-**   Copyright (C) 2014 P.L. Lucas
+**   Copyright (C) 2016 P.L. Lucas
 **
 **
 ** LICENSE: BSD
@@ -15,7 +15,7 @@
 **     notice, this list of conditions and the following disclaimer in
 **     the documentation and/or other materials provided with the
 **     distribution.
-**   * Neither the name of developers or companies in the above copyright and its 
+**   * Neither the name of developers or companies in the above copyright, Digia Plc and its 
 **     Subsidiary(-ies) nor the names of its contributors may be used to 
 **     endorse or promote products derived from this software without 
 **     specific prior written permission.
@@ -36,32 +36,43 @@
 **
 ****************************************************************************/
 
-#ifndef FINDDIALOG_H
-#define FINDDIALOG_H
+#ifndef COMPLETIONDIALOG_H
+#define COMPLETIONDIALOG_H
 
 #include <QDialog>
-#include <QTextDocument>
+#include <QLineEdit>
+#include <QCompleter>
+#include <QListView>
+#include <QStringListModel>
+#include <QStringList>
 
-#include "ui_find.h"
 
-class FindDialog : public QDialog {
+class LineEdit : public QLineEdit
+{
     Q_OBJECT
 
 public:
-    FindDialog(QWidget * parent = 0);
-    QTextDocument::FindFlags findFlags();
-    QString text();
-    QString replaceText();
-    bool regExpChecked();
-    void showDialog();
+    LineEdit(QWidget * parent = 0);
 
-signals:
-    void find();
-    void replace();
-    void replaceAll();
-    
+protected:
+    void focusInEvent(QFocusEvent * e);
+};
+
+class CompletionDialog : public QDialog
+{
+    Q_OBJECT
+
+public:
+    CompletionDialog(QWidget * parent = 0);
+    void setWordList(const QStringList completerWordList);
+    void setCompletionPrefix(QString text);
+    void clear();
+    QString getText();
+
 private:
-    Ui::Find ui;
+    QCompleter *completer;
+    LineEdit *lineEdit;
+    QStringListModel *completerWordListModel;
 };
 
 #endif

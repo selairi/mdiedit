@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-**   Copyright (C) 2014 P.L. Lucas
+**   Copyright (C) 2016 P.L. Lucas
 **
 **
 ** LICENSE: BSD
@@ -15,7 +15,7 @@
 **     notice, this list of conditions and the following disclaimer in
 **     the documentation and/or other materials provided with the
 **     distribution.
-**   * Neither the name of developers or companies in the above copyright and its 
+**   * Neither the name of developers or companies in the above copyright, Digia Plc and its 
 **     Subsidiary(-ies) nor the names of its contributors may be used to 
 **     endorse or promote products derived from this software without 
 **     specific prior written permission.
@@ -36,32 +36,54 @@
 **
 ****************************************************************************/
 
-#ifndef FINDDIALOG_H
-#define FINDDIALOG_H
+#include "completiondialog.h"
+#include <QVBoxLayout>
+#include <QTimer>
 
-#include <QDialog>
-#include <QTextDocument>
-
-#include "ui_find.h"
-
-class FindDialog : public QDialog {
-    Q_OBJECT
-
-public:
-    FindDialog(QWidget * parent = 0);
-    QTextDocument::FindFlags findFlags();
-    QString text();
-    QString replaceText();
-    bool regExpChecked();
-    void showDialog();
-
-signals:
-    void find();
-    void replace();
-    void replaceAll();
+CompletionDialog::CompletionDialog(QWidget * parent):QDialog(parent)
+{
+    setWindowTitle(tr("Completer"));
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    setLayout(layout);
+		
+    completer = new QCompleter(this);
+    completerWordListModel = new QStringListModel(this);
+    completer->setModel(completerWordListModel);
     
-private:
-    Ui::Find ui;
-};
+    lineEdit = new LineEdit(this);
+    lineEdit->setCompleter(completer);
+    layout->addWidget(lineEdit);
+    connect(lineEdit, SIGNAL(returnPressed()), this, SLOT(accept()));
+}
 
-#endif
+void CompletionDialog::setWordList(const QStringList completerWordList)
+{
+    completerWordListModel->setStringList(completerWordList);
+}
+
+void CompletionDialog::setCompletionPrefix(QString text)
+{
+    lineEdit->setText(text);
+}
+
+void CompletionDialog::clear()
+{
+    completerWordListModel->setStringList(QStringList());
+    lineEdit->clear();
+}
+
+QString CompletionDialog::getText()
+{
+    return lineEdit->text();
+}
+
+LineEdit::LineEdit(QWidget *parent):QLineEdit(parent)
+{
+}
+
+void LineEdit::focusInEvent(QFocusEvent * e)
+{
+    QLineEdit::focusInEvent(e);
+    completer()->complete();
+    deselect();
+}

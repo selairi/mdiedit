@@ -46,12 +46,12 @@
 #endif
 #include <QFontDialog>
 #include <QInputDialog> 
-#include <QCompleter>
 #include <QFileInfo>
 
 #include "mainwindow.h"
 #include "mdichild.h"
 #include "snipplesdialog.h"
+#include "completiondialog.h"
 
 MainWindow::MainWindow()
 {
@@ -217,62 +217,48 @@ void MainWindow::redo()
 
 void MainWindow::completion()
 {
-	if (activeMdiChild()) {
-		MdiChild *activeChild = activeMdiChild();
+    if (activeMdiChild()) {
+        MdiChild *activeChild = activeMdiChild();
+		
+        CompletionDialog *completionDialog = new CompletionDialog(this);        
+
+        QStringList completerWordList;
+		
+        QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+        for (int i = 0; i < windows.size(); ++i) {
+            MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+            QString str = child->toPlainText();
+            completerWordList = completerWordList + str.split(QRegExp("\\W"), QString::SkipEmptyParts);
+        }
+        		
+        completerWordList.removeDuplicates();
+        completionDialog->setWordList(completerWordList);
 	
-		QDialog dialog(this);
-		dialog.setWindowTitle(tr("Completer"));
-		QVBoxLayout *layout = new QVBoxLayout(&dialog);
-		dialog.setLayout(layout);
-		
-		QCompleter *completer = new QCompleter(&dialog);
-		QStringListModel *completerWordListModel = new QStringListModel(&dialog);;
-		QStringList completerWordList;
-		
-		QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
-		for (int i = 0; i < windows.size(); ++i) {
-			MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
-			QString str = child->toPlainText();
-			completerWordList = completerWordList + str.split(QRegExp("\\W"), QString::SkipEmptyParts);
-		}
-		
-		completerWordList.removeDuplicates();
-		completerWordListModel->setStringList(completerWordList);
-		completer->setModel(completerWordListModel);
-		
-		QTextCursor cursor = activeChild->textCursor();
-		QTextCursor cursorOriginal = activeChild->textCursor();
-		cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
-		QString text = cursor.selectedText();
-		if(QRegExp("\\w").exactMatch(text)) {
-			cursor = activeChild->textCursor();
-			cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
-			text = cursor.selectedText();
-			activeChild->setTextCursor(cursor);
-		} else
-			text = QString();
-		
-		
-		
-		QLineEdit *line = new QLineEdit(&dialog);
-		line->setText(text);
-		line->setCompleter(completer);
-		layout->addWidget(line);
-		connect(line, SIGNAL(returnPressed()), &dialog, SLOT(accept()));
-		completer->setCompletionPrefix(text);
-		QTimer::singleShot(500, completer, SLOT(complete()));
-		int ok = dialog.exec();
-		if(ok == QDialog::Accepted) {
-			activeChild->setFocus(Qt::ActiveWindowFocusReason);
-			activeChild->insertPlainText(line->text());
-		}
-		else
-			activeChild->setTextCursor(cursorOriginal);
-		disconnect(line, SIGNAL(returnPressed()), &dialog, SLOT(accept()));
-		
-		completerWordList.clear();
-		completerWordListModel->setStringList(completerWordList);
-	}
+        QTextCursor cursor = activeChild->textCursor();
+        QTextCursor cursorOriginal = activeChild->textCursor();
+        cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
+        QString text = cursor.selectedText();
+        if(QRegExp("\\w").exactMatch(text)) {
+            cursor = activeChild->textCursor();
+            cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
+            text = cursor.selectedText();
+            activeChild->setTextCursor(cursor);
+        } else
+            text = QString();
+        
+        completionDialog->setCompletionPrefix(text);
+        
+        int ok = completionDialog->exec();
+        if(ok == QDialog::Accepted) {
+            activeChild->setFocus(Qt::ActiveWindowFocusReason);
+            activeChild->insertPlainText(completionDialog->getText());
+        }
+        else
+            activeChild->setTextCursor(cursorOriginal);
+        
+        completionDialog->clear();
+        delete completionDialog;
+    }
 }
 
 void MainWindow::putCursorInNotFound(QTextDocument::FindFlags flags)

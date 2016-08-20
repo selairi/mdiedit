@@ -2,15 +2,15 @@ cmake_minimum_required( VERSION 2.6 )
 project(mdiedit)
 
 set(H_FILES
-	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h textblockdata.h
+	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h textblockdata.h completiondialog.h
 )
 
 set(MOC_FILES
-	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h textblockdata.h
+	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h textblockdata.h completiondialog.h
 )
 
 set(CPP_FILES
-    document.cpp  finddialog.cpp  main.cpp  mainwindow.cpp  mdichild.cpp snipplesdialog.cpp textblockdata.cpp
+    document.cpp  finddialog.cpp  main.cpp  mainwindow.cpp  mdichild.cpp snipplesdialog.cpp textblockdata.cpp completiondialog.cpp
 )
 
 
