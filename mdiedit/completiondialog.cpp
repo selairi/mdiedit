@@ -64,6 +64,7 @@ void CompletionDialog::setWordList(const QStringList completerWordList)
 void CompletionDialog::setCompletionPrefix(QString text)
 {
     lineEdit->setText(text);
+    completer->setCompletionPrefix(text);
 }
 
 void CompletionDialog::clear()
