@@ -54,6 +54,8 @@ MdiChild::MdiChild()
 	docLayout = new PlainTextDocumentLayout(_document);
 	_document->setDocumentLayout(docLayout);
 	setDocument(_document);
+	syntaxHightlighter = new SyntaxHighlighter(_document);
+	syntaxHightlighter->setDocument(_document);
 	setAttribute(Qt::WA_DeleteOnClose);
 	setWindowIcon(QIcon::fromTheme("text-x-generic"));
 	isUntitled = true;

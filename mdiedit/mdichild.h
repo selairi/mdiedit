@@ -44,6 +44,7 @@
 #include <QStringListModel>
 #include <QHash>
 #include "document.h"
+#include "syntaxhighlighter.h"
 
 class PlainTextDocumentLayout;
 
@@ -98,6 +99,7 @@ private:
     PlainTextDocumentLayout *docLayout;
     void insertSpacesAsTab(QTextCursor &cursor);
     void removeSpacesAsTab(QTextCursor &cursor);
+    SyntaxHighlighter *syntaxHightlighter;
     
     struct BlockMode {
         bool enabled;
