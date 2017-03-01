@@ -48,7 +48,7 @@
 #include "mdichild.h"
 #include "textblockdata.h"
 
-MdiChild::MdiChild()
+MdiChild::MdiChild(QWidget *parent):QPlainTextEdit(parent)
 {
 	_document = new Document(this);
 	docLayout = new PlainTextDocumentLayout(_document);

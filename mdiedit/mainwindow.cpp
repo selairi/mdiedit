@@ -86,27 +86,24 @@ MainWindow::MainWindow()
 
 #include <QTime>
 void MainWindow::showLineNumber() {
-	// static QTime time = QTime::currentTime();
-	// if(time.restart()<100)
-	// 	return;
-	MdiChild *child = activeMdiChild();
-	if (child && lineNumberLabel) {
-		int lineno = child->textCursor().blockNumber();
-		int columnno = child->textCursor().positionInBlock();
-		QString str = QString(tr("%1,%2")).arg(++lineno).arg(++columnno);
-		lineNumberLabel->setText(str);
-		}
+    MdiChild *child = activeMdiChild();
+    if (child && lineNumberLabel) {
+        int lineno = child->textCursor().blockNumber();
+        int columnno = child->textCursor().positionInBlock();
+        QString str = QString(tr("%1,%2")).arg(++lineno).arg(++columnno);
+        lineNumberLabel->setText(str);
+        }
 }
 
 void MainWindow::updateMdiChild(QMdiSubWindow *) {
-	if(activeMdiChild()) {
-		QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
-		for (int i = 0; i < windows.size(); ++i) {
-			MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
-			disconnect(child, SIGNAL(cursorPositionChanged()), this, SLOT(showLineNumber()));
-		}
-		connect(activeMdiChild(), SIGNAL(cursorPositionChanged()), this, SLOT(showLineNumber()));
-	}
+    if(activeMdiChild()) {
+        QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+        for (int i = 0; i < windows.size(); ++i) {
+            MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+            disconnect(child, SIGNAL(cursorPositionChanged()), this, SLOT(showLineNumber()));
+        }
+        connect(activeMdiChild(), SIGNAL(cursorPositionChanged()), this, SLOT(showLineNumber()));
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -129,22 +126,25 @@ void MainWindow::newFile()
 
 void MainWindow::open(QString fileName)
 {
-	if (!fileName.isEmpty()) {
+    if (!fileName.isEmpty()) {
+        qDebug() << "[MainWindow::open] Is this file already open?";
         QMdiSubWindow *existing = findMdiChild(fileName);
         if (existing) {
             mdiArea->setActiveSubWindow(existing);
             return;
         }
 
+        qDebug() << "[MainWindow::open] New child";
         MdiChild *child = createMdiChild();
         QFileInfo fileInfo(fileName);
         if(fileInfo.exists()) {
-	        if (child->loadFile(fileName)) {
-	            statusBar()->showMessage(tr("File loaded"), 2000);
-	            child->show();
-	        } else {
-	            child->close();
-	        }
+            qDebug() << "[MainWindow::open] Loading file";
+            if (child->loadFile(fileName)) {
+                statusBar()->showMessage(tr("File loaded"), 2000);
+                child->show();
+            } else {
+                child->close();
+            }
         }
         else {
             child->setCurrentFile(fileName);
@@ -156,14 +156,14 @@ void MainWindow::open(QString fileName)
 
 void MainWindow::open()
 {
-	QString _path;
-	 if (activeMdiChild()) {
-	 	_path = activeMdiChild()->currentFile();
-	 }
-	QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open"), _path);
-	QString fileName;
-	foreach(fileName, fileNames)
-		open(fileName);
+    QString _path;
+     if (activeMdiChild()) {
+         _path = activeMdiChild()->currentFile();
+     }
+    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open"), _path);
+    QString fileName;
+    foreach(fileName, fileNames)
+        open(fileName);
 }
 
 void MainWindow::save()
@@ -219,21 +219,21 @@ void MainWindow::completion()
 {
     if (activeMdiChild()) {
         MdiChild *activeChild = activeMdiChild();
-		
+        
         CompletionDialog *completionDialog = new CompletionDialog(this);        
 
         QStringList completerWordList;
-		
+        
         QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
         for (int i = 0; i < windows.size(); ++i) {
             MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
             QString str = child->toPlainText();
             completerWordList = completerWordList + str.split(QRegExp("\\W"), QString::SkipEmptyParts);
         }
-        		
+                
         completerWordList.removeDuplicates();
         completionDialog->setWordList(completerWordList);
-	
+    
         QTextCursor cursor = activeChild->textCursor();
         QTextCursor cursorOriginal = activeChild->textCursor();
         cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
@@ -263,12 +263,12 @@ void MainWindow::completion()
 
 void MainWindow::putCursorInNotFound(QTextDocument::FindFlags flags)
 {
-	if (activeMdiChild()) {
-		if(flags & QTextDocument::FindBackward)
-			activeMdiChild()->moveCursor(QTextCursor::End);
-		else
-			activeMdiChild()->moveCursor(QTextCursor::Start);
-	}
+    if (activeMdiChild()) {
+        if(flags & QTextDocument::FindBackward)
+            activeMdiChild()->moveCursor(QTextCursor::End);
+        else
+            activeMdiChild()->moveCursor(QTextCursor::Start);
+    }
 }
 
 bool MainWindow::findNext()
@@ -282,16 +282,16 @@ bool MainWindow::findNext()
              QTextCursor cursor = activeMdiChild()->textCursor();
              QTextCursor cursorAux = activeMdiChild()->document()->find(QRegExp(str), cursor, flags);
              ok = !cursorAux.isNull();
-	         if(ok)
-	         	activeMdiChild()->setTextCursor(cursorAux);
+             if(ok)
+                 activeMdiChild()->setTextCursor(cursorAux);
         }
         else
             ok = activeMdiChild()->find(str, flags);
         if(!ok) {
-			QMessageBox msgBox;
-			msgBox.setText(tr("Not found."));
-			msgBox.exec();
-			putCursorInNotFound(flags);
+            QMessageBox msgBox;
+            msgBox.setText(tr("Not found."));
+            msgBox.exec();
+            putCursorInNotFound(flags);
         }
         return ok;
     }
@@ -300,61 +300,61 @@ bool MainWindow::findNext()
 
 void MainWindow::showFindDialog()
 {
-	if (activeMdiChild()) {
-		if(findDialog == NULL) {
-			findDialog = new FindDialog(this);
-			connect(findDialog, SIGNAL(find()), this, SLOT(findNext()));
-			connect(findDialog, SIGNAL(replace()), this, SLOT(replace()));
-			connect(findDialog, SIGNAL(replaceAll()), this, SLOT(replaceAll()));
-		}
-		findDialog->showDialog();
-	}
+    if (activeMdiChild()) {
+        if(findDialog == NULL) {
+            findDialog = new FindDialog(this);
+            connect(findDialog, SIGNAL(find()), this, SLOT(findNext()));
+            connect(findDialog, SIGNAL(replace()), this, SLOT(replace()));
+            connect(findDialog, SIGNAL(replaceAll()), this, SLOT(replaceAll()));
+        }
+        findDialog->showDialog();
+    }
 }
 
 void MainWindow::setFont(MdiChild *child)
 {
-	if(child==NULL) {
-		QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
-		for (int i = 0; i < windows.size(); ++i) {
-			MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
-			child->setFont(font);
-		}
-	}
-	else {
-		if(child)
-			child->setFont(font);
-	}
+    if(child==NULL) {
+        QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+        for (int i = 0; i < windows.size(); ++i) {
+            MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+            child->setFont(font);
+        }
+    }
+    else {
+        if(child)
+            child->setFont(font);
+    }
 }
 
 void MainWindow::showFontDialog()
 {
-	bool ok;
-	QFont selectedFont = QFontDialog::getFont(&ok, font, this);
-	if (ok) {
-		font = selectedFont;
-		setFont();
-	}
+    bool ok;
+    QFont selectedFont = QFontDialog::getFont(&ok, font, this);
+    if (ok) {
+        font = selectedFont;
+        setFont();
+    }
 }
 
 void MainWindow::showSnipplesDialog()
 {
-	SnipplesDialog *dialog = new SnipplesDialog(&snipples, snipplesActivateOk, this);
-	int ok = dialog->exec();
-	if(QDialog::Rejected==ok)
-		return;
-	snipples = dialog->snipples;
-	snipplesActivateOk = dialog->getActivateSnipples();
-	delete dialog;
+    SnipplesDialog *dialog = new SnipplesDialog(&snipples, snipplesActivateOk, this);
+    int ok = dialog->exec();
+    if(QDialog::Rejected==ok)
+        return;
+    snipples = dialog->snipples;
+    snipplesActivateOk = dialog->getActivateSnipples();
+    delete dialog;
 }
 
 void MainWindow::replace()
 {
     
     if (activeMdiChild() && findDialog) {
-		//		QTextDocument::FindFlags flags = findDialog->findFlags();
-		//		QString str = findDialog->text();
+        //        QTextDocument::FindFlags flags = findDialog->findFlags();
+        //        QString str = findDialog->text();
         QString replace_str = findDialog->replaceText();
-    	    bool ok = true;
+            bool ok = true;
         if(activeMdiChild()->textCursor().hasSelection()) {
             if( activeMdiChild()->textCursor().selectedText() == replace_str )
                  ok = findNext();
@@ -362,138 +362,138 @@ void MainWindow::replace()
         else
              ok = findNext();
         if(!ok)
-			return; 
+            return; 
         else
-        		activeMdiChild()->insertPlainText(replace_str);
+                activeMdiChild()->insertPlainText(replace_str);
         ok = findNext();
     }
 }
 
 void MainWindow::replaceAll()
 {
-	if (activeMdiChild() && findDialog) {
+    if (activeMdiChild() && findDialog) {
        QTextDocument::FindFlags flags = findDialog->findFlags();
        QString str = findDialog->text();
        QString replace_str = findDialog->replaceText();
        bool regExpOk = findDialog->regExpChecked();
        bool ok;
-    	   QTextCursor cursor = activeMdiChild()->textCursor();
-	   cursor.movePosition(QTextCursor::Start);
-	   cursor.beginEditBlock();
+           QTextCursor cursor = activeMdiChild()->textCursor();
+       cursor.movePosition(QTextCursor::Start);
+       cursor.beginEditBlock();
         if(regExpOk)
-	        		cursor = activeMdiChild()->document()->find(QRegExp(str), cursor, flags);
-	        	else
-	        		cursor = activeMdiChild()->document()->find(str, cursor, flags);
+                    cursor = activeMdiChild()->document()->find(QRegExp(str), cursor, flags);
+                else
+                    cursor = activeMdiChild()->document()->find(str, cursor, flags);
         ok = !cursor.isNull();
         while(ok) {
-	        	cursor.insertText(replace_str);
-	        	QTextCursor cursorAux;
-	        	if(regExpOk)
-	        		cursorAux = activeMdiChild()->document()->find(QRegExp(str), cursor, flags);
-	        	else
-	        		cursorAux = activeMdiChild()->document()->find(str, cursor, flags);
-	        	ok = !cursorAux.isNull();
-	        	if(ok) //cursor.swap(cursorAux);
-	        		cursor=cursorAux;
-	    }
+                cursor.insertText(replace_str);
+                QTextCursor cursorAux;
+                if(regExpOk)
+                    cursorAux = activeMdiChild()->document()->find(QRegExp(str), cursor, flags);
+                else
+                    cursorAux = activeMdiChild()->document()->find(str, cursor, flags);
+                ok = !cursorAux.isNull();
+                if(ok) //cursor.swap(cursorAux);
+                    cursor=cursorAux;
+        }
         cursor.endEditBlock();
     }
 }
 
 void MainWindow::goToLine()
 {
-	MdiChild *child = activeMdiChild();
-	if (child) {
-		QTextCursor cursor = child->textCursor();
-		bool ok;
-		int lineno = QInputDialog::getInt(this, tr("Go to line"), tr("Line number"), cursor.blockNumber()+1, 1, 2147483647, 1, &ok);
-		if(ok) {
-			cursor.movePosition(QTextCursor::Start);
-			cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, lineno-1);
-			child->setTextCursor(cursor);
-		}
-	}
+    MdiChild *child = activeMdiChild();
+    if (child) {
+        QTextCursor cursor = child->textCursor();
+        bool ok;
+        int lineno = QInputDialog::getInt(this, tr("Go to line"), tr("Line number"), cursor.blockNumber()+1, 1, 2147483647, 1, &ok);
+        if(ok) {
+            cursor.movePosition(QTextCursor::Start);
+            cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, lineno-1);
+            child->setTextCursor(cursor);
+        }
+    }
 }
 
 void MainWindow::wordwrapMode(MdiChild *child)
 {
-	if(child==NULL) {
-		QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
-		for (int i = 0; i < windows.size(); ++i) {
-			MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
-			if(wordwrapAct->isChecked())
-				child->setLineWrapMode(QPlainTextEdit::WidgetWidth);
-			else
-				child->setLineWrapMode(QPlainTextEdit::NoWrap);
-		}
-	}
-	else {
-		if(child) {
-			if(wordwrapAct->isChecked())
-				child->setLineWrapMode(QPlainTextEdit::WidgetWidth);
-			else
-				child->setLineWrapMode(QPlainTextEdit::NoWrap);
-		}
-	}
+    if(child==NULL) {
+        QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+        for (int i = 0; i < windows.size(); ++i) {
+            MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+            if(wordwrapAct->isChecked())
+                child->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+            else
+                child->setLineWrapMode(QPlainTextEdit::NoWrap);
+        }
+    }
+    else {
+        if(child) {
+            if(wordwrapAct->isChecked())
+                child->setLineWrapMode(QPlainTextEdit::WidgetWidth);
+            else
+                child->setLineWrapMode(QPlainTextEdit::NoWrap);
+        }
+    }
 }
 
 void MainWindow::newView()
 {
-	if (activeMdiChild()) {
-		MdiChild *activeChild = activeMdiChild();
-		MdiChild *child = createMdiChild();
-		child->setView(activeChild);
-		child->show();
-	}
+    if (activeMdiChild()) {
+        MdiChild *activeChild = activeMdiChild();
+        MdiChild *child = createMdiChild();
+        child->setView(activeChild);
+        child->show();
+    }
 }
 
 void MainWindow::saveAll()
 {
-	QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
-	
-	for (int i = 0; i < windows.size(); ++i) {
-		MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
-		child->save();
-	}
+    QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+    
+    for (int i = 0; i < windows.size(); ++i) {
+        MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+        child->save();
+    }
 }
 
 void MainWindow::minimizeAllSubWindows()
 {
-	QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
-	
-	for (int i = 0; i < windows.size(); ++i) {
-		MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
-		child->showMinimized();
-	}
+    QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+    
+    for (int i = 0; i < windows.size(); ++i) {
+        MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+        child->showMinimized();
+    }
 }
 
 void MainWindow::toggleTabbedViewMode()
 {
-	if(tabbedViewAct->isChecked())
-		mdiArea->setViewMode(QMdiArea::TabbedView);
-	else
-		mdiArea->setViewMode(QMdiArea::SubWindowView);
+    if(tabbedViewAct->isChecked())
+        mdiArea->setViewMode(QMdiArea::TabbedView);
+    else
+        mdiArea->setViewMode(QMdiArea::SubWindowView);
 }
 
 void MainWindow::reparentDocument(Document *doc)
 {
-	QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
-	
-	for (int i = 0; i < windows.size(); ++i) {
-		MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
-		if( child->view() == doc ) {
-			doc->setParent(child);
-			break;
-		}
-	}
+    QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+    
+    for (int i = 0; i < windows.size(); ++i) {
+        MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+        if( child->view() == doc ) {
+            doc->setParent(child);
+            break;
+        }
+    }
 }
 
 void MainWindow::about()
 {
    QMessageBox::about(this, tr("About MDI Edit"),
             tr("Simple text editor based in the Qt MDI example.\n\n"
-            	"Copyright (C) 2016 P.L. Lucas\n"
-            	"License: 3-clause BSD"
+                "Copyright (C) 2016 P.L. Lucas\n"
+                "License: 3-clause BSD"
             ));
 }
 
@@ -552,7 +552,7 @@ void MainWindow::updateWindowMenu()
         QString text;
         QString windowTitle = child->userFriendlyCurrentFile();
         if(child->view()->isModified())
-        	windowTitle+=" *";
+            windowTitle+=" *";
         if (i < 9) {
             text = tr("&%1 %2").arg(i + 1)
                                .arg(windowTitle);
@@ -570,7 +570,7 @@ void MainWindow::updateWindowMenu()
 
 MdiChild *MainWindow::createMdiChild()
 {
-    MdiChild *child = new MdiChild;
+    MdiChild *child = new MdiChild(mdiArea);
     child->snipples = &snipples;
     child->snipplesActivateOk = &snipplesActivateOk;
     child->replaceTabsBySpacesOk = &replaceTabsBySpacesOk;

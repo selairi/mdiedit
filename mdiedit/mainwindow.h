@@ -65,7 +65,7 @@ public:
     MainWindow();
 
 public slots:
-	void open(QString fileName);
+    void open(QString fileName);
 
 protected:
     void closeEvent(QCloseEvent *event);

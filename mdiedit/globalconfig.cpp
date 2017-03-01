@@ -36,8 +36,10 @@
 **
 ****************************************************************************/
 
-#ifndef __CONFIG_H__
-#define TRANSLATIONS_PATH "${CMAKE_INSTALL_PREFIX}/share/mdiedit/translations-qm"
-#define ICON_PATH "${CMAKE_INSTALL_PREFIX}/share/icons"
-#define __CONFIG_H__
-#endif
+#include "globalconfig.h"
+
+GlobalConfig::GlobalConfig(QObject *parent):QObject(parent)
+{
+    snipplesActivateOk = replaceTabsBySpacesOk = false;
+    autoindent = true;
+}

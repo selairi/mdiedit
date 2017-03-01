@@ -53,7 +53,7 @@ class MdiChild : public QPlainTextEdit
     Q_OBJECT
 
 public:
-    MdiChild();
+    MdiChild(QWidget *parent);
 
     void newFile();
     bool loadFile(const QString &fileName);
