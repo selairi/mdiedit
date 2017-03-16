@@ -2,15 +2,15 @@ cmake_minimum_required( VERSION 2.6 )
 project(mdiedit)
 
 set(H_FILES
-	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h textblockdata.h completiondialog.h syntaxhighlighter.h
+	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h textblockdata.h completiondialog.h syntaxhighlighter.h globalconfig.h
 )
 
 set(MOC_FILES
-	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h textblockdata.h completiondialog.h syntaxhighlighter.h
+	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h textblockdata.h completiondialog.h syntaxhighlighter.h globalconfig.h
 )
 
 set(CPP_FILES
-    document.cpp  finddialog.cpp  main.cpp  mainwindow.cpp  mdichild.cpp snipplesdialog.cpp textblockdata.cpp completiondialog.cpp
+    document.cpp  finddialog.cpp  main.cpp  mainwindow.cpp  mdichild.cpp snipplesdialog.cpp textblockdata.cpp completiondialog.cpp globalconfig.cpp
     syntaxhighlighter.cpp
 )
 
@@ -88,6 +88,7 @@ include_directories(
 
 if(NOT CMAKE_BUILD_TYPE)
     set( CMAKE_BUILD_TYPE Release )
+    message("Release mode activated.")
 endif (NOT CMAKE_BUILD_TYPE)
 
 set(APP_SHARE_DIR share/lxqt/${PROJECT_NAME})

@@ -53,6 +53,7 @@ public:
     QHash<QString,QString> snipples;
     bool snipplesActivateOk;
     bool replaceTabsBySpacesOk;
+    int tabsSpacesSize;
     bool autoindent;
 };
 

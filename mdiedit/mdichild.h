@@ -45,6 +45,7 @@
 #include <QHash>
 #include "document.h"
 #include "syntaxhighlighter.h"
+#include "globalconfig.h"
 
 class PlainTextDocumentLayout;
 
@@ -53,7 +54,7 @@ class MdiChild : public QPlainTextEdit
     Q_OBJECT
 
 public:
-    MdiChild(QWidget *parent);
+    MdiChild(GlobalConfig *globalConfig, QWidget *parent);
 
     void newFile();
     bool loadFile(const QString &fileName);
@@ -68,8 +69,7 @@ public:
     void blockMode(bool enableOk = true);
 
     QHash<QString,QString> *snipples;
-    bool *snipplesActivateOk;
-    bool *replaceTabsBySpacesOk;
+    GlobalConfig *globalConfig;
 
 signals:
     void reparentDocument(Document *);

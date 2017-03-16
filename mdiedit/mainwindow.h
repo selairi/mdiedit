@@ -45,6 +45,7 @@
 #include <QHash>
 
 #include "finddialog.h"
+#include "globalconfig.h"
 
 class MdiChild;
 class Document;
@@ -57,12 +58,15 @@ class QSignalMapper;
 class QLabel;
 QT_END_NAMESPACE
 
+#define N_TABS_SPACES 8
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
     MainWindow();
+    ~MainWindow();
 
 public slots:
     void open(QString fileName);
@@ -92,6 +96,7 @@ private slots:
     void showFontDialog();
     void showSnipplesDialog();
     void replaceTabsBySpaces();
+    void setTabsSize(int spaces);
     void about();
     void updateMenus();
     void updateWindowMenu();
@@ -119,9 +124,11 @@ private:
     QMdiSubWindow *findMdiChild(const QString &fileName);
     void setFont(MdiChild *child = NULL);
     void putCursorInNotFound(QTextDocument::FindFlags flags);
+    GlobalConfig *globalConfig;
 
     QMdiArea *mdiArea;
     QSignalMapper *windowMapper;
+    QSignalMapper *actionsMapper;
     
     QFont font;
 
@@ -153,6 +160,9 @@ private:
     QAction *fontAct;
     QAction *snipplesAct;
     QAction *replaceTabsBySpacesAct;
+    QMenu *tabsMenu;
+    QAction **tabsSpacesAct; // Pointer to array of N_TABS_SPACES elements
+    QActionGroup *tabsGroupAct;
     
     QAction *newViewAct;
     QAction *closeAct;
@@ -170,8 +180,6 @@ private:
     QLabel *lineNumberLabel;
     
     QHash<QString,QString> snipples;
-    bool snipplesActivateOk;
-    bool replaceTabsBySpacesOk;
 };
 
 #endif

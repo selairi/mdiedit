@@ -55,10 +55,9 @@
 
 MainWindow::MainWindow()
 {
-    snipplesActivateOk = true;
-    replaceTabsBySpacesOk = false;
+    globalConfig = new GlobalConfig(this);
     lineNumberLabel = NULL;
-    mdiArea = new QMdiArea;
+    mdiArea = new QMdiArea(this);
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setCentralWidget(mdiArea);
@@ -69,6 +68,8 @@ MainWindow::MainWindow()
     windowMapper = new QSignalMapper(this);
     connect(windowMapper, SIGNAL(mapped(QWidget*)),
             this, SLOT(setActiveSubWindow(QWidget*)));
+    actionsMapper = new QSignalMapper(this);
+    tabsGroupAct = new QActionGroup(this);
 
     createActions();
     createMenus();
@@ -84,6 +85,11 @@ MainWindow::MainWindow()
     findDialog = NULL;
 }
 
+MainWindow::~MainWindow()
+{
+    delete [] tabsSpacesAct;
+}
+
 #include <QTime>
 void MainWindow::showLineNumber() {
     MdiChild *child = activeMdiChild();
@@ -92,7 +98,7 @@ void MainWindow::showLineNumber() {
         int columnno = child->textCursor().positionInBlock();
         QString str = QString(tr("%1,%2")).arg(++lineno).arg(++columnno);
         lineNumberLabel->setText(str);
-        }
+    }
 }
 
 void MainWindow::updateMdiChild(QMdiSubWindow *) {
@@ -127,18 +133,15 @@ void MainWindow::newFile()
 void MainWindow::open(QString fileName)
 {
     if (!fileName.isEmpty()) {
-        qDebug() << "[MainWindow::open] Is this file already open?";
         QMdiSubWindow *existing = findMdiChild(fileName);
         if (existing) {
             mdiArea->setActiveSubWindow(existing);
             return;
         }
 
-        qDebug() << "[MainWindow::open] New child";
         MdiChild *child = createMdiChild();
         QFileInfo fileInfo(fileName);
         if(fileInfo.exists()) {
-            qDebug() << "[MainWindow::open] Loading file";
             if (child->loadFile(fileName)) {
                 statusBar()->showMessage(tr("File loaded"), 2000);
                 child->show();
@@ -338,12 +341,12 @@ void MainWindow::showFontDialog()
 
 void MainWindow::showSnipplesDialog()
 {
-    SnipplesDialog *dialog = new SnipplesDialog(&snipples, snipplesActivateOk, this);
+    SnipplesDialog *dialog = new SnipplesDialog(&snipples, globalConfig->snipplesActivateOk, this);
     int ok = dialog->exec();
     if(QDialog::Rejected==ok)
         return;
     snipples = dialog->snipples;
-    snipplesActivateOk = dialog->getActivateSnipples();
+    globalConfig->snipplesActivateOk = dialog->getActivateSnipples();
     delete dialog;
 }
 
@@ -492,7 +495,7 @@ void MainWindow::about()
 {
    QMessageBox::about(this, tr("About MDI Edit"),
             tr("Simple text editor based in the Qt MDI example.\n\n"
-                "Copyright (C) 2016 P.L. Lucas\n"
+                "Copyright (C) 2017 P.L. Lucas\n"
                 "License: 3-clause BSD"
             ));
 }
@@ -570,10 +573,9 @@ void MainWindow::updateWindowMenu()
 
 MdiChild *MainWindow::createMdiChild()
 {
-    MdiChild *child = new MdiChild(mdiArea);
+    MdiChild *child = new MdiChild(globalConfig, mdiArea);
     child->snipples = &snipples;
-    child->snipplesActivateOk = &snipplesActivateOk;
-    child->replaceTabsBySpacesOk = &replaceTabsBySpacesOk;
+    child->globalConfig = globalConfig;
     mdiArea->addSubWindow(child);
 
     connect(child, SIGNAL(copyAvailable(bool)), cutAct, SLOT(setEnabled(bool)));
@@ -667,6 +669,20 @@ void MainWindow::createActions()
     replaceTabsBySpacesAct->setCheckable(true);
     connect(replaceTabsBySpacesAct, SIGNAL(changed()), this, SLOT(replaceTabsBySpaces()));
     
+    tabsSpacesAct = new QAction*[N_TABS_SPACES];
+    for(int i=0; i<N_TABS_SPACES; i++) {
+        int spaces = i==0?1:i*2;
+        QString arg=QString("%1").arg(spaces);
+        tabsSpacesAct[i] = new QAction(arg, this);
+        tabsSpacesAct[i]->setCheckable(true);
+        if(spaces == globalConfig->tabsSpacesSize)
+            tabsSpacesAct[i]->setChecked(true);
+        tabsGroupAct->addAction(tabsSpacesAct[i]);
+        connect(tabsSpacesAct[i], SIGNAL(changed()), actionsMapper, SLOT(map()));
+        actionsMapper->setMapping(tabsSpacesAct[i], spaces);
+    }
+    connect(actionsMapper, SIGNAL(mapped(int)), this, SLOT(setTabsSize(int)));
+    
     wordwrapAct = new QAction( tr("&Wordwrap"), this);
     wordwrapAct->setCheckable(true);
     connect(wordwrapAct, SIGNAL(triggered()), this, SLOT(wordwrapMode()));
@@ -710,6 +726,9 @@ void MainWindow::createActions()
 
     tileAct = new QAction(tr("&Tile"), this);
     tileAct->setStatusTip(tr("Tile the windows"));
+    QList<QKeySequence> keysTileAct;
+    keysTileAct << QKeySequence(Qt::Key_F10);
+    tileAct->setShortcuts(keysTileAct);
     connect(tileAct, SIGNAL(triggered()), mdiArea, SLOT(tileSubWindows()));
 
     cascadeAct = new QAction(tr("&Cascade"), this);
@@ -776,9 +795,13 @@ void MainWindow::createMenus()
     editMenu->addAction(goToLineAct);
     editMenu->addSeparator();
     editMenu->addAction(snipplesAct);
-    editMenu->addAction(replaceTabsBySpacesAct);
     editMenu->addAction(wordwrapAct);
     editMenu->addAction(fontAct);
+    tabsMenu = editMenu->addMenu(tr("Tabs"));
+    tabsMenu->addAction(replaceTabsBySpacesAct);
+    for(int i=0; i<N_TABS_SPACES; i++) {
+        tabsMenu->addAction(tabsSpacesAct[i]);
+    }
 
     windowMenu = menuBar()->addMenu(tr("&Window"));
     updateWindowMenu();
@@ -832,9 +855,9 @@ void MainWindow::readSettings()
     font.fromString(settings.value("font").toString());
     setFont();
     settings.endGroup();
-    replaceTabsBySpacesOk = settings.value("replaceTabsBySpacesOk").toBool();
-    replaceTabsBySpacesAct->setChecked(replaceTabsBySpacesOk);
-    snipplesActivateOk = settings.value("snipplesActivateOk").toBool();
+    globalConfig->replaceTabsBySpacesOk = settings.value("replaceTabsBySpacesOk").toBool();
+    replaceTabsBySpacesAct->setChecked(globalConfig->replaceTabsBySpacesOk);
+    globalConfig->snipplesActivateOk = settings.value("snipplesActivateOk").toBool();
     settings.beginGroup("snipples");
     QStringList keys = settings.childKeys();
      foreach(QString key, keys) {
@@ -856,8 +879,8 @@ void MainWindow::writeSettings()
     settings.setValue("wordwrap", wordwrapAct->isChecked());
     settings.setValue("font", font.toString());
     settings.endGroup();
-    settings.setValue("replaceTabsBySpacesOk", replaceTabsBySpacesOk);
-    settings.setValue("snipplesActivateOk", snipplesActivateOk);
+    settings.setValue("replaceTabsBySpacesOk", globalConfig->replaceTabsBySpacesOk);
+    settings.setValue("snipplesActivateOk", globalConfig->snipplesActivateOk);
     settings.beginGroup("snipples");
     QHash<QString, QString>::const_iterator i = snipples.constBegin();
     while (i != snipples.constEnd()) {
@@ -869,7 +892,8 @@ void MainWindow::writeSettings()
 
 MdiChild *MainWindow::activeMdiChild()
 {
-    if (QMdiSubWindow *activeSubWindow = mdiArea->activeSubWindow())
+    QMdiSubWindow *activeSubWindow = mdiArea->activeSubWindow();
+    if (activeSubWindow)
         return qobject_cast<MdiChild *>(activeSubWindow->widget());
     return 0;
 }
@@ -903,7 +927,12 @@ void MainWindow::setActiveSubWindow(QWidget *window)
 
 void MainWindow::replaceTabsBySpaces()
 {
-    replaceTabsBySpacesOk = replaceTabsBySpacesAct->isChecked();
+    globalConfig->replaceTabsBySpacesOk = replaceTabsBySpacesAct->isChecked();
+}
+
+void MainWindow::setTabsSize(int spaces)
+{
+    globalConfig->tabsSpacesSize = spaces;
 }
 
 void MainWindow::blockMode()

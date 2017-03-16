@@ -42,4 +42,5 @@ GlobalConfig::GlobalConfig(QObject *parent):QObject(parent)
 {
     snipplesActivateOk = replaceTabsBySpacesOk = false;
     autoindent = true;
+    tabsSpacesSize = 4;
 }
