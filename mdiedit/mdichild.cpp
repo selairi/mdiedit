@@ -71,7 +71,7 @@ MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(p
 		this, SLOT(documentWasModified()));
 	connect(document(), SIGNAL(fileNameChanged(QString)),
 		this, SLOT(setCurrentFile(QString)));
-	connect(docLayout, SIGNAL(docChanged(int, int, int)), this, SLOT(documentChanged(int, int, int)));
+	connect(document(), SIGNAL(contentsChange(int, int, int)), this, SLOT(documentChanged(int, int, int)));
 }
 
 void MdiChild::keyPressEvent(QKeyEvent * e)
@@ -310,7 +310,8 @@ void MdiChild::documentChanged(int position, int charsRemoved, int charsAdded)
             cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, charsAdded);
             QString text = cursor.selectedText();
             int pos = position - cursor.block().position();
-            disconnect(docLayout, SIGNAL(docChanged(int, int, int)), this, SLOT(documentChanged(int, int, int)));
+            //disconnect(docLayout, SIGNAL(docChanged(int, int, int)), this, SLOT(documentChanged(int, int, int)));
+            disconnect(document(), SIGNAL(contentsChange(int, int, int)), this, SLOT(documentChanged(int, int, int)));
          	  disconnect(document(), SIGNAL(contentsChanged()), this, SLOT(documentContentsChanged()));
             for(int i = blockModeData.startLine+1; i<=blockModeData.endLine; i++)
             {
@@ -338,8 +339,10 @@ void MdiChild::documentChanged(int position, int charsRemoved, int charsAdded)
                 cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, charsCount);
                 cursor.insertText(text);
             }
-            connect(docLayout, SIGNAL(docChanged(int, int, int)), this, SLOT(documentChanged(int, int, int)));
+            connect(document(), SIGNAL(contentsChange(int, int, int)), this, SLOT(documentChanged(int, int, int)));
             connect(document(), SIGNAL(contentsChanged()), this, SLOT(documentContentsChanged()));
+            if(syntaxHightlighter)
+                syntaxHightlighter->rehighlight();
         }
         else
               blockMode(false);
