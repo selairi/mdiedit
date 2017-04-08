@@ -112,8 +112,7 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
     	QString text = cursor.selectedText();
     	text.replace(QChar(QChar::ParagraphSeparator), "\n");
     	if(globalConfig->replaceTabsBySpacesOk) {
-    	    QString spaces;
-    	    spaces.resize(globalConfig->tabsSpacesSize, ' ');
+    	    QString spaces(globalConfig->tabsSpacesSize, ' ');
     	    text = spaces + text;
     	    spaces ="\n" + spaces;
     	    text.replace(QChar('\n'), spaces);

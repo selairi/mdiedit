@@ -857,6 +857,11 @@ void MainWindow::readSettings()
     settings.endGroup();
     globalConfig->replaceTabsBySpacesOk = settings.value("replaceTabsBySpacesOk").toBool();
     replaceTabsBySpacesAct->setChecked(globalConfig->replaceTabsBySpacesOk);
+    globalConfig->tabsSpacesSize = settings.value("tabsSpacesSize").toInt();
+    for(int i=0;i<N_TABS_SPACES;i++) {
+        int spaces = i==0?1:i*2;
+        tabsSpacesAct[i]->setChecked(spaces == globalConfig->tabsSpacesSize);
+    }
     globalConfig->snipplesActivateOk = settings.value("snipplesActivateOk").toBool();
     settings.beginGroup("snipples");
     QStringList keys = settings.childKeys();
@@ -880,6 +885,7 @@ void MainWindow::writeSettings()
     settings.setValue("font", font.toString());
     settings.endGroup();
     settings.setValue("replaceTabsBySpacesOk", globalConfig->replaceTabsBySpacesOk);
+    settings.setValue("tabsSpacesSize", globalConfig->tabsSpacesSize);
     settings.setValue("snipplesActivateOk", globalConfig->snipplesActivateOk);
     settings.beginGroup("snipples");
     QHash<QString, QString>::const_iterator i = snipples.constBegin();
