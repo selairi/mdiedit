@@ -54,6 +54,7 @@ MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(p
 	docLayout = new PlainTextDocumentLayout(_document);
 	_document->setDocumentLayout(docLayout);
 	setDocument(_document);
+	blockMode(false);
 	syntaxHightlighter = new SyntaxHighlighter(_document);
 	syntaxHightlighter->setDocument(_document);
 	setAttribute(Qt::WA_DeleteOnClose);
@@ -230,6 +231,7 @@ bool MdiChild::loadFile(const QString &fileName)
         return false;
     }
 
+    blockMode(false);
     QTextStream in(&file);
     QApplication::setOverrideCursor(Qt::WaitCursor);
     setPlainText(in.readAll());
