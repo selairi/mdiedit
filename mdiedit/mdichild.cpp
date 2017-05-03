@@ -63,8 +63,7 @@ MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(p
 	autoindent = true;
 	snipples = NULL;
 	this->globalConfig = globalConfig;
-	setTabStopWidth( fontMetrics().width('0')*globalConfig->tabsSpacesSize );
-	//setTabStopWidth(20);
+	updateTabsSize();
 	setCursorWidth(3);
 	connect(document(), SIGNAL(contentsChanged()),
 		this, SLOT(documentContentsChanged()));
@@ -435,6 +434,12 @@ void MdiChild::focusInEvent(QFocusEvent * event)
     }
     QPlainTextEdit::focusInEvent(event);
 }
+
+void MdiChild::updateTabsSize()
+{
+    setTabStopWidth( fontMetrics().width('0')*globalConfig->tabsSpacesSize );
+}
+
 
 void MdiChild::blockMode(bool enableOk)
 {

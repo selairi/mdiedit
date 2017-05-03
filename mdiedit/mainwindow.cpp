@@ -939,6 +939,10 @@ void MainWindow::replaceTabsBySpaces()
 void MainWindow::setTabsSize(int spaces)
 {
     globalConfig->tabsSpacesSize = spaces;
+    foreach (QMdiSubWindow *window, mdiArea->subWindowList()) {
+        MdiChild *mdiChild = qobject_cast<MdiChild *>(window->widget());
+        mdiChild->updateTabsSize();
+    }
 }
 
 void MainWindow::blockMode()
