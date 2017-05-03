@@ -61,9 +61,9 @@ MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(p
 	setWindowIcon(QIcon::fromTheme("text-x-generic"));
 	isUntitled = true;
 	autoindent = true;
-	this->globalConfig=globalConfig;
-	snipples=NULL;
-	this->globalConfig=globalConfig;
+	snipples = NULL;
+	this->globalConfig = globalConfig;
+	setTabStopWidth( fontMetrics().width('0')*globalConfig->tabsSpacesSize );
 	//setTabStopWidth(20);
 	setCursorWidth(3);
 	connect(document(), SIGNAL(contentsChanged()),
