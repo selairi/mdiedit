@@ -70,11 +70,14 @@ MainWindow::MainWindow()
             this, SLOT(setActiveSubWindow(QWidget*)));
     actionsMapper = new QSignalMapper(this);
     tabsGroupAct = new QActionGroup(this);
+    
+    fileBrowserWidget = NULL;
 
     createActions();
     createMenus();
     createToolBars();
     createStatusBar();
+    createDockWidgets();
     updateMenus();
 
     readSettings();
@@ -88,6 +91,43 @@ MainWindow::MainWindow()
 MainWindow::~MainWindow()
 {
     delete [] tabsSpacesAct;
+}
+
+void MainWindow::showFileBrowser()
+{
+    if(fileBrowserWidget == NULL) {
+        //showFileBrowser(true);
+        fileBrowserDockWidget->show();
+    }
+    else
+        fileBrowserDockWidget->setVisible(!fileBrowserDockWidget->isVisible());
+}
+
+void MainWindow::showFileBrowser(bool visibility)
+{
+    if(visibility && fileBrowserWidget == NULL) {
+        fileBrowserWidget = new FileBrowser(this);
+        fileBrowserDockWidget->setWidget(fileBrowserWidget);
+        fileBrowserWidget->show();
+        connect(fileBrowserWidget, SIGNAL(fileActivated(QString)), this, SLOT(open(QString)));
+        if(!fileBrowserPath.isEmpty())
+            fileBrowserWidget->setPath(fileBrowserPath);
+    }
+    else if(!visibility && fileBrowserWidget != NULL) {
+        fileBrowserPath = fileBrowserWidget->getPath();
+        delete fileBrowserWidget;
+        fileBrowserWidget = NULL;
+        fileBrowserDockWidget->setWidget(fileBrowserWidget);
+    }
+}
+
+void MainWindow::createDockWidgets()
+{
+    fileBrowserDockWidget = new QDockWidget(tr("File Browser"), this);
+    fileBrowserDockWidget->setObjectName("File Browser");
+    addDockWidget(Qt::RightDockWidgetArea, fileBrowserDockWidget);
+    fileBrowserDockWidget->hide();
+    connect(fileBrowserDockWidget, SIGNAL(visibilityChanged(bool)), this, SLOT(showFileBrowser(bool)));
 }
 
 #include <QTime>
@@ -705,6 +745,12 @@ void MainWindow::createActions()
     keysCompletionAct << QKeySequence(Qt::Key_F2);
     completionAct->setShortcuts(keysCompletionAct);
     connect(completionAct, SIGNAL(triggered()), this, SLOT(completion()));
+    
+    showFileBrowserAct = new QAction( tr("Show/Hide file browser"), this);
+    QList<QKeySequence> keysShowFileBrowserAct;
+    keysShowFileBrowserAct << QKeySequence(Qt::Key_F5);
+    showFileBrowserAct->setShortcuts(keysShowFileBrowserAct);
+    connect(showFileBrowserAct, SIGNAL(triggered()), this, SLOT(showFileBrowser()));
 
     newViewAct = new QAction( tr("&New view"), this);
     connect(newViewAct, SIGNAL(triggered()), this, SLOT(newView()));
@@ -802,6 +848,9 @@ void MainWindow::createMenus()
     for(int i=0; i<N_TABS_SPACES; i++) {
         tabsMenu->addAction(tabsSpacesAct[i]);
     }
+    
+    toolsMenu = menuBar()->addMenu(tr("&Tools"));
+    toolsMenu->addAction(showFileBrowserAct);
 
     windowMenu = menuBar()->addMenu(tr("&Window"));
     updateWindowMenu();
@@ -820,12 +869,14 @@ void MainWindow::createToolBars()
     fileToolBar->addAction(newAct);
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(saveAct);
+    fileToolBar->setObjectName("FileToolBar");
 
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(cutAct);
     editToolBar->addAction(copyAct);
     editToolBar->addAction(pasteAct);
     editToolBar->addAction(findAct);
+    editToolBar->setObjectName("EditToolBar");
 }
 
 void MainWindow::createStatusBar()
@@ -845,8 +896,7 @@ void MainWindow::readSettings()
     resize(size);
     if(settings.value("maximized", false).toBool())
         showMaximized();
-    fileToolBar->setVisible(settings.value("fileToolBar", QVariant(true)).toBool());
-    editToolBar->setVisible(settings.value("editToolBar", QVariant(true)).toBool());
+    restoreState(settings.value("windowState").toByteArray());
     tabbedViewAct->setChecked(settings.value("tabbedViewMode", QVariant(false)).toBool());
     toggleTabbedViewMode();
     settings.beginGroup("format");
@@ -877,9 +927,8 @@ void MainWindow::writeSettings()
     settings.setValue("pos", pos());
     settings.setValue("size", size());
     settings.setValue("maximized", isMaximized());
-    settings.setValue("fileToolBar", fileToolBar->isVisible());
-    settings.setValue("editToolBar", editToolBar->isVisible());
     settings.setValue("tabbedViewMode", tabbedViewAct->isChecked());
+    settings.setValue("windowState", saveState());
     settings.beginGroup("format");
     settings.setValue("wordwrap", wordwrapAct->isChecked());
     settings.setValue("font", font.toString());

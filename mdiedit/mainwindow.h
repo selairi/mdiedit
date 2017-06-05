@@ -45,6 +45,7 @@
 #include <QHash>
 
 #include "finddialog.h"
+#include "filebrowser.h"
 #include "globalconfig.h"
 
 class MdiChild;
@@ -111,6 +112,8 @@ private slots:
     void reparentDocument(Document *doc);
     void toggleTabbedViewMode();
     void showMessage(QString text);
+    void showFileBrowser(bool visibility);
+    void showFileBrowser();
 
 private:
     FindDialog *findDialog;
@@ -118,6 +121,7 @@ private:
     void createMenus();
     void createToolBars();
     void createStatusBar();
+    void createDockWidgets();
     void readSettings();
     void writeSettings();
     MdiChild *activeMdiChild();
@@ -134,6 +138,7 @@ private:
 
     QMenu *fileMenu;
     QMenu *editMenu;
+    QMenu *toolsMenu;
     QMenu *windowMenu;
     QMenu *helpMenu;
     QToolBar *fileToolBar;
@@ -164,6 +169,8 @@ private:
     QAction **tabsSpacesAct; // Pointer to array of N_TABS_SPACES elements
     QActionGroup *tabsGroupAct;
     
+    QAction *showFileBrowserAct;
+    
     QAction *newViewAct;
     QAction *closeAct;
     QAction *closeAllAct;
@@ -178,6 +185,9 @@ private:
     QAction *aboutQtAct;
     
     QLabel *lineNumberLabel;
+    QDockWidget *fileBrowserDockWidget;
+    FileBrowser *fileBrowserWidget;
+    QString fileBrowserPath;
     
     QHash<QString,QString> snipples;
 };
