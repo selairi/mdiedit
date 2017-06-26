@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-**   Copyright (C) 2014 P.L. Lucas
+**   Copyright (C) 2017 P.L. Lucas
 **   Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 **
 **
@@ -74,6 +74,7 @@ public slots:
 
 protected:
     void closeEvent(QCloseEvent *event);
+    void showEvent(QShowEvent *event);
 
 private slots:
     void newFile();
@@ -170,6 +171,7 @@ private:
     QActionGroup *tabsGroupAct;
     
     QAction *showFileBrowserAct;
+    QMenu *popupMenu;
     
     QAction *newViewAct;
     QAction *closeAct;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-**   Copyright (C) 2016 P.L. Lucas
+**   Copyright (C) 2017 P.L. Lucas
 **   Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 **
 **
@@ -57,6 +57,7 @@ MainWindow::MainWindow()
 {
     globalConfig = new GlobalConfig(this);
     lineNumberLabel = NULL;
+    popupMenu = NULL;
     mdiArea = new QMdiArea(this);
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -1005,3 +1006,14 @@ void MainWindow::showMessage(QString text)
 {
     statusBar()->showMessage(text, 10000);
 }
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+    if(popupMenu == NULL)
+    {
+        toolsMenu->addMenu(popupMenu = createPopupMenu());
+        popupMenu->setTitle(tr("Show/Hide Tools"));
+    }
+}
+
