@@ -1,4 +1,4 @@
 mdiedit
 =======
 
-Simple text editor with MDI interface
+Simple text editor with MDI interface.

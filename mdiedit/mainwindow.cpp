@@ -129,6 +129,10 @@ void MainWindow::createDockWidgets()
     addDockWidget(Qt::RightDockWidgetArea, fileBrowserDockWidget);
     fileBrowserDockWidget->hide();
     connect(fileBrowserDockWidget, SIGNAL(visibilityChanged(bool)), this, SLOT(showFileBrowser(bool)));
+    
+    documentListDockWidget = new DocumentList(globalConfig, this);
+    documentListDockWidget->setObjectName("Document List");
+    addDockWidget(Qt::RightDockWidgetArea, documentListDockWidget);
 }
 
 #include <QTime>
@@ -623,6 +627,8 @@ MdiChild *MainWindow::createMdiChild()
     connect(child, SIGNAL(copyAvailable(bool)), copyAct, SLOT(setEnabled(bool)));
     connect(child, SIGNAL(reparentDocument(Document *)), this, SLOT(reparentDocument(Document *)));
     connect(child, SIGNAL(showMessage(QString)), this, SLOT(showMessage(QString)));
+    connect(child, SIGNAL(updateWindowName(MdiChild*)), documentListDockWidget, SLOT(updateDocument(MdiChild*)));
+    connect(child, SIGNAL(deleteDocument(MdiChild*)), documentListDockWidget, SLOT(deleteDocument(MdiChild*)));
 
     wordwrapMode(child);
     setFont(child);

@@ -2,16 +2,16 @@ cmake_minimum_required( VERSION 2.6 )
 project(mdiedit)
 
 set(H_FILES
-	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h textblockdata.h completiondialog.h syntaxhighlighter.h globalconfig.h filebrowser.h
+	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h textblockdata.h completiondialog.h syntaxhighlighter.h globalconfig.h filebrowser.h documentlist.h
 )
 
 set(MOC_FILES
-	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h textblockdata.h completiondialog.h syntaxhighlighter.h globalconfig.h filebrowser.h
+	document.h  finddialog.h  mainwindow.h  mdichild.h snipplesdialog.h textblockdata.h completiondialog.h syntaxhighlighter.h globalconfig.h filebrowser.h documentlist.h
 )
 
 set(CPP_FILES
     document.cpp  finddialog.cpp  main.cpp  mainwindow.cpp  mdichild.cpp snipplesdialog.cpp textblockdata.cpp completiondialog.cpp globalconfig.cpp filebrowser.cpp
-    syntaxhighlighter.cpp
+    syntaxhighlighter.cpp documentlist.cpp
 )
 
 

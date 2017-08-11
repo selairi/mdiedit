@@ -67,6 +67,8 @@ public:
     Document *view();
     void completion();
     void blockMode(bool enableOk = true);
+    void setWindowTitle(const QString &name);
+    void setWindowModified(bool modifiedOk);
 
     QHash<QString,QString> *snipples;
     GlobalConfig *globalConfig;
@@ -74,6 +76,8 @@ public:
 signals:
     void reparentDocument(Document *);
     void showMessage(QString);
+    void updateWindowName(MdiChild *mdichild);
+    void deleteDocument(MdiChild *mdichild);
 
 public slots:
     void setCurrentFile(QString fileName);

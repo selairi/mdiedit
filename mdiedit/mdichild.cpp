@@ -288,10 +288,11 @@ QString MdiChild::userFriendlyCurrentFile()
 void MdiChild::closeEvent(QCloseEvent *event)
 {
     if (maybeSave()) {
+        emit deleteDocument(this);
         if(_document->parent() == this) { // Reparent _document to other view
-	        Document *doc=_document;
-	        _document = NULL;
-	        emit reparentDocument(doc);
+            Document *doc=_document;
+            _document = NULL;
+            emit reparentDocument(doc);
         }
         event->accept();
     } else {
@@ -409,6 +410,23 @@ QString MdiChild::strippedName(const QString &fullFileName)
 {
     return QFileInfo(fullFileName).fileName();
 }
+
+
+void MdiChild::setWindowTitle(const QString &name)
+{
+    QWidget::setWindowTitle(name);
+    emit updateWindowName(this);
+}
+
+
+void MdiChild::setWindowModified(bool modifiedOk)
+{
+    if(isWindowModified() == modifiedOk)
+        return;
+    QWidget::setWindowModified(modifiedOk);
+    emit updateWindowName(this);
+}
+
 
 void MdiChild::focusOutEvent(QFocusEvent * event)
 {

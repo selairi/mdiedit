@@ -46,6 +46,7 @@
 
 #include "finddialog.h"
 #include "filebrowser.h"
+#include "documentlist.h"
 #include "globalconfig.h"
 
 class MdiChild;
@@ -190,6 +191,8 @@ private:
     QDockWidget *fileBrowserDockWidget;
     FileBrowser *fileBrowserWidget;
     QString fileBrowserPath;
+    
+    DocumentList *documentListDockWidget;
     
     QHash<QString,QString> snipples;
 };
