@@ -39,23 +39,46 @@
 #include "documentlist.h"
 #include <QFileInfo>
 #include <QDir>
+#include <QAction>
+#include <QKeySequence>
+#include <QMdiSubWindow>
+#include <QBoxLayout>
+#include <QDebug>
 
-DocumentList::DocumentList(GlobalConfig *globalConfig, QWidget *parent)
+DocumentList::DocumentList(GlobalConfig *globalConfig,  QMdiArea *mdiArea, QWidget *parent)
 {
     this->globalConfig = globalConfig;
+    this->mdiArea = mdiArea;
+    QAction *action = toggleViewAction();
+    QList<QKeySequence> keysAct;
+    keysAct << QKeySequence(Qt::Key_F9);
+    action->setShortcuts(keysAct);
     setWindowTitle(tr("Document List"));
-    treeWidget = new QTreeWidget(this);
-    // layout = new QBoxLayout(QBoxLayout::TopToBottom, this);
-    // setLayout(layout);
-    // layout->addWidget(treeWidget);
-    setWidget(treeWidget);
+    container = new QWidget(this);
+    QBoxLayout *layout = new QBoxLayout(QBoxLayout::TopToBottom, container);
+    //container->setLayout(layout);
+    container->setObjectName("Container");
+    setWidget(container);
+    treeWidget = new QTreeWidget(container);
+    layout->addWidget(treeWidget);
     treeWidget->setColumnCount(2);
     QStringList labels;
-    labels << "Name" << "Path";
+    labels << tr("Name") << tr("Path");
     treeWidget->setHeaderLabels(labels);
     treeWidget->setSortingEnabled(true);
     treeWidget->setColumnWidth(0, 200);
     connect(treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(focusMdiChild(QTreeWidgetItem*, int)));
+    QBoxLayout *boxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+    layout->addLayout(boxLayout);
+    tileModeCheckBox = new QCheckBox(tr("Tile on click"), container);
+    tileModeCheckBox->setCheckState(Qt::Unchecked);
+    boxLayout->addWidget(tileModeCheckBox);
+    maxWindowsShownInTiledSpinBox = new QSpinBox(container);
+    boxLayout->addWidget(maxWindowsShownInTiledSpinBox);
+    maxWindowsShownInTiledSpinBox->setMinimum(1);
+    maxWindowsShownInTiledSpinBox->setValue(3);
+    maxWindowsShownInTiledSpinBox->setEnabled(false);
+    connect(tileModeCheckBox, SIGNAL(stateChanged(int)), this, SLOT(tileModeCheckBoxStateChanged(int)));
 }
 
 QTreeWidgetItem* DocumentList::findTreeNode(QString path, MdiChild *mdichild)
@@ -142,4 +165,43 @@ void DocumentList::focusMdiChild(QTreeWidgetItem* item, int column)
     if(child != nullptr) {
         child->setFocus();
     }
+    if(tileModeCheckBox->checkState() == Qt::Checked) {
+        if(child != nullptr) {
+            child->showNormal();
+        }
+        int maxWindowsShown = maxWindowsShownInTiledSpinBox->value();
+        QList<QMdiSubWindow*> windows = mdiArea->subWindowList(QMdiArea::ActivationHistoryOrder);
+        int i, count = 0;
+        // Count number of not minimized windows
+        for(i = 0; i < windows.size(); i++) {
+            if(! windows[i]->isMinimized()) count++;
+        }
+        if(maxWindowsShown == count) {
+            mdiArea->tileSubWindows();
+            return;
+        }
+        // Only maxWindowsShown windows are shown.
+        // Minimize windows.size() - maxWindowsShown windows and maximize the others
+        count = windows.size() - maxWindowsShown;
+        for(i = 0; i < windows.size(); i++) {
+            if(count > 0 && windows[i] != (QMdiSubWindow*)child) {
+                if(! windows[i]->isMinimized()) {
+                    windows[i]->showMinimized();
+                }
+                count--;
+            } else {
+                if(windows[i]->isMinimized()) windows[i]->showNormal();
+            }
+        }
+        // Restore windows order
+        for(i = 0; i < windows.size(); i++) {
+            mdiArea->setActiveSubWindow(windows[i]);
+        }
+        mdiArea->tileSubWindows();
+    }
+}
+
+void DocumentList::tileModeCheckBoxStateChanged(int state)
+{
+    maxWindowsShownInTiledSpinBox->setEnabled(state == Qt::Checked);
 }

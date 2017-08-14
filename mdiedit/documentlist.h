@@ -41,7 +41,9 @@
 
 #include <QDockWidget>
 #include <QTreeWidget>
-#include <QBoxLayout>
+#include <QCheckBox>
+#include <QSpinBox> 
+#include <QMdiArea>
 #include "globalconfig.h"
 #include "mdichild.h"
 
@@ -51,17 +53,21 @@ class DocumentList : public QDockWidget
     Q_OBJECT
 
 public:
-    DocumentList(GlobalConfig *globalConfig, QWidget *parent);
+    DocumentList(GlobalConfig *globalConfig, QMdiArea *mdiArea, QWidget *parent);
 
 public slots:
     void updateDocument(MdiChild *mdichild);
     void deleteDocument(MdiChild *mdichild);
     void focusMdiChild(QTreeWidgetItem* item, int column);
+    void tileModeCheckBoxStateChanged(int state);
 
 private:
     GlobalConfig *globalConfig;
+    QMdiArea *mdiArea;
     QTreeWidget *treeWidget;
-    QBoxLayout *layout;
+    QWidget *container;
+    QCheckBox *tileModeCheckBox;
+    QSpinBox *maxWindowsShownInTiledSpinBox;
     QTreeWidgetItem* findTreeNode(QString path, MdiChild *mdichild);
     QTreeWidgetItem* findTreeNode(MdiChild *mdichild);
 };

@@ -130,7 +130,7 @@ void MainWindow::createDockWidgets()
     fileBrowserDockWidget->hide();
     connect(fileBrowserDockWidget, SIGNAL(visibilityChanged(bool)), this, SLOT(showFileBrowser(bool)));
     
-    documentListDockWidget = new DocumentList(globalConfig, this);
+    documentListDockWidget = new DocumentList(globalConfig, mdiArea, this);
     documentListDockWidget->setObjectName("Document List");
     addDockWidget(Qt::RightDockWidgetArea, documentListDockWidget);
 }
