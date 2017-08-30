@@ -35,6 +35,8 @@
 **
 **
 ****************************************************************************/
+#ifndef __DOCUMENT_H__
+#define __DOCUMENT_H__
 
 #include <QTextDocument>
 #include <QPlainTextDocumentLayout>
@@ -59,4 +61,6 @@ private:
 	QString _fileName;
 	QPlainTextDocumentLayout *plainTextDocumentLayout;
 	QPlainTextEdit *lastView;
-};    
+};
+
+#endif

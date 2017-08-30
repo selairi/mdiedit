@@ -99,6 +99,8 @@ private slots:
     void showFontDialog();
     void showSnipplesDialog();
     void replaceTabsBySpaces();
+    void syntaxHighlight();
+    void highlightParenthesisMatch();
     void setTabsSize(int spaces);
     void about();
     void updateMenus();
@@ -167,7 +169,10 @@ private:
     QAction *fontAct;
     QAction *snipplesAct;
     QAction *replaceTabsBySpacesAct;
+    QAction *syntaxHighlightAct;
+    QAction *highlightParenthesisMatchAct;
     QMenu *tabsMenu;
+    QMenu *syntaxHighlightMenu;
     QAction **tabsSpacesAct; // Pointer to array of N_TABS_SPACES elements
     QActionGroup *tabsGroupAct;
     

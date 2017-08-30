@@ -42,10 +42,17 @@
 #include <QTextBlockUserData>
 #include <QList>
 
+struct Parenthesis;
+
 class TextBlockData : public QTextBlockUserData {
 public:
     TextBlockData();
-    QList <void*> views;
+    QList <Parenthesis> parenthesis;
+};
+
+struct Parenthesis {
+    QChar parenthesis;
+    int pos;
 };
 
 #endif

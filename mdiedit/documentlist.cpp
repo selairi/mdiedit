@@ -60,6 +60,7 @@ DocumentList::DocumentList(GlobalConfig *globalConfig,  QMdiArea *mdiArea, QWidg
     container->setObjectName("Container");
     setWidget(container);
     treeWidget = new QTreeWidget(container);
+    //treeWidget->setIndentation(8);
     layout->addWidget(treeWidget);
     treeWidget->setColumnCount(2);
     QStringList labels;

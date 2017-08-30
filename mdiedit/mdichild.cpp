@@ -55,7 +55,7 @@ MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(p
 	_document->setDocumentLayout(docLayout);
 	setDocument(_document);
 	blockMode(false);
-	syntaxHightlighter = new SyntaxHighlighter(_document);
+	syntaxHightlighter = new SyntaxHighlighter(_document, palette(), globalConfig);
 	syntaxHightlighter->setDocument(_document);
 	setAttribute(Qt::WA_DeleteOnClose);
 	setWindowIcon(QIcon::fromTheme("text-x-generic"));
@@ -72,6 +72,7 @@ MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(p
 	connect(document(), SIGNAL(fileNameChanged(QString)),
 		this, SLOT(setCurrentFile(QString)));
 	connect(document(), SIGNAL(contentsChange(int, int, int)), this, SLOT(documentChanged(int, int, int)));
+	connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(matchParenthesisPair()));
 }
 
 void MdiChild::keyPressEvent(QKeyEvent * e)
@@ -154,9 +155,9 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
     	}
     	return;
     } else if(e->key() == Qt::Key_Tab && globalConfig->replaceTabsBySpacesOk) {
-    	QTextCursor cursor = textCursor();
-    	insertSpacesAsTab(cursor);
-    	return;
+        	QTextCursor cursor = textCursor();
+        	insertSpacesAsTab(cursor);
+        	return;
     }
     
     QPlainTextEdit::keyPressEvent(e);
@@ -392,18 +393,19 @@ bool MdiChild::maybeSave()
 
 void MdiChild::setCurrentFile(QString fileName)
 {
-	QFileInfo fileInfo(fileName);
-	if(! fileInfo.exists() && _document->fileName() != fileName )
-		_document->setFileName(fileName);
-	else if(fileInfo.canonicalFilePath() != QFileInfo(_document->fileName()).canonicalFilePath())
-		_document->setFileName(QFileInfo(fileName).canonicalFilePath());
-	isUntitled = false;
-	_document->setModified(false);
-	setWindowModified(false);
-	if(fileInfo.exists())
-		setWindowTitle(userFriendlyCurrentFile() + "[*]");
-	else
-		setWindowTitle(fileName + "[*]");
+    QFileInfo fileInfo(fileName);
+    if(! fileInfo.exists() && _document->fileName() != fileName )
+        _document->setFileName(fileName);
+    else if(fileInfo.canonicalFilePath() != QFileInfo(_document->fileName()).canonicalFilePath())
+        _document->setFileName(QFileInfo(fileName).canonicalFilePath());
+    isUntitled = false;
+    _document->setModified(false);
+    setWindowModified(false);
+    if(fileInfo.exists())
+        setWindowTitle(userFriendlyCurrentFile() + "[*]");
+    else
+        setWindowTitle(fileName + "[*]");
+    syntaxHightlighter->setFileName(fileName);
 }
 
 QString MdiChild::strippedName(const QString &fullFileName)
@@ -485,6 +487,14 @@ void MdiChild::blockMode(bool enableOk)
         emit showMessage(tr("Block mode: Disabled."));
 }
 
+void MdiChild::matchParenthesisPair()
+{
+    
+    if(syntaxHightlighter != nullptr)
+        syntaxHightlighter->matchParenthesis(textCursor().block(),
+            textCursor().positionInBlock());
+}
+
 PlainTextDocumentLayout::PlainTextDocumentLayout(QTextDocument *parent):QPlainTextDocumentLayout(parent)
 {
 
@@ -495,3 +505,4 @@ void PlainTextDocumentLayout::documentChanged(int position, int charsRemoved, in
     QPlainTextDocumentLayout::documentChanged(position, charsRemoved, charsAdded);
     emit docChanged(position, charsRemoved, charsAdded);
 }
+

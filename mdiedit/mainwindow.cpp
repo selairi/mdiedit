@@ -729,6 +729,14 @@ void MainWindow::createActions()
         actionsMapper->setMapping(tabsSpacesAct[i], spaces);
     }
     connect(actionsMapper, SIGNAL(mapped(int)), this, SLOT(setTabsSize(int)));
+
+    syntaxHighlightAct = new QAction( tr("Syntax highlight"), this);
+    syntaxHighlightAct->setCheckable(true);
+    connect(syntaxHighlightAct, SIGNAL(changed()), this, SLOT(syntaxHighlight()));
+    
+    highlightParenthesisMatchAct = new QAction( tr("Highlight parenthesis match"), this);
+    highlightParenthesisMatchAct->setCheckable(true);
+    connect(highlightParenthesisMatchAct, SIGNAL(changed()), this, SLOT(highlightParenthesisMatch()));
     
     wordwrapAct = new QAction( tr("&Wordwrap"), this);
     wordwrapAct->setCheckable(true);
@@ -855,6 +863,9 @@ void MainWindow::createMenus()
     for(int i=0; i<N_TABS_SPACES; i++) {
         tabsMenu->addAction(tabsSpacesAct[i]);
     }
+    syntaxHighlightMenu = editMenu->addMenu(tr("Syntax"));
+    syntaxHighlightMenu->addAction(syntaxHighlightAct);
+    syntaxHighlightMenu->addAction(highlightParenthesisMatchAct);
     
     toolsMenu = menuBar()->addMenu(tr("&Tools"));
     toolsMenu->addAction(showFileBrowserAct);
@@ -907,19 +918,23 @@ void MainWindow::readSettings()
     tabbedViewAct->setChecked(settings.value("tabbedViewMode", QVariant(false)).toBool());
     toggleTabbedViewMode();
     settings.beginGroup("format");
-    wordwrapAct->setChecked(settings.value("wordwrap").toBool());
+    wordwrapAct->setChecked(settings.value("wordwrap", true).toBool());
     wordwrapMode();
     font.fromString(settings.value("font").toString());
     setFont();
     settings.endGroup();
-    globalConfig->replaceTabsBySpacesOk = settings.value("replaceTabsBySpacesOk").toBool();
+    globalConfig->replaceTabsBySpacesOk = settings.value("replaceTabsBySpacesOk", false).toBool();
     replaceTabsBySpacesAct->setChecked(globalConfig->replaceTabsBySpacesOk);
     globalConfig->tabsSpacesSize = settings.value("tabsSpacesSize").toInt();
     for(int i=0;i<N_TABS_SPACES;i++) {
         int spaces = i==0?1:i*2;
         tabsSpacesAct[i]->setChecked(spaces == globalConfig->tabsSpacesSize);
     }
-    globalConfig->snipplesActivateOk = settings.value("snipplesActivateOk").toBool();
+    globalConfig->snipplesActivateOk = settings.value("snipplesActivateOk", false).toBool();
+    globalConfig->setSyntaxHighlight(settings.value("syntaxHighlightOk", true).toBool());
+    syntaxHighlightAct->setChecked(globalConfig->isSyntaxHighlight());
+    globalConfig->setHighlightParenthesisMatch(settings.value("highlightParenthesisMatch", true).toBool());
+    highlightParenthesisMatchAct->setChecked(globalConfig->isHighlightParenthesisMatch());
     settings.beginGroup("snipples");
     QStringList keys = settings.childKeys();
      foreach(QString key, keys) {
@@ -943,6 +958,8 @@ void MainWindow::writeSettings()
     settings.setValue("replaceTabsBySpacesOk", globalConfig->replaceTabsBySpacesOk);
     settings.setValue("tabsSpacesSize", globalConfig->tabsSpacesSize);
     settings.setValue("snipplesActivateOk", globalConfig->snipplesActivateOk);
+    settings.setValue("syntaxHighlightOk", globalConfig->isSyntaxHighlight());
+    settings.setValue("highlightParenthesisMatch", globalConfig->isHighlightParenthesisMatch());
     settings.beginGroup("snipples");
     QHash<QString, QString>::const_iterator i = snipples.constBegin();
     while (i != snipples.constEnd()) {
@@ -990,6 +1007,16 @@ void MainWindow::setActiveSubWindow(QWidget *window)
 void MainWindow::replaceTabsBySpaces()
 {
     globalConfig->replaceTabsBySpacesOk = replaceTabsBySpacesAct->isChecked();
+}
+
+void MainWindow::syntaxHighlight()
+{
+    globalConfig->setSyntaxHighlight(syntaxHighlightAct->isChecked());
+}
+
+void MainWindow::highlightParenthesisMatch()
+{
+        globalConfig->setHighlightParenthesisMatch(highlightParenthesisMatchAct->isChecked());
 }
 
 void MainWindow::setTabsSize(int spaces)

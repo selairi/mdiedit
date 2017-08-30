@@ -36,6 +36,11 @@ set(TRANSLATIONS_FILES
     translations-qm/mdiedit-ru.qm
 )
 
+set(SYNTAX_FILES
+    syntax/syntax.json
+)
+
+
 # Config file
 configure_file ( config.in config.h )
 
@@ -123,6 +128,7 @@ install(FILES ${CONFIG_FILES} DESTINATION ${APP_SHARE_DIR})
 install(FILES ${DESKTOP_FILES} DESTINATION share/applications)
 install(FILES ${APP_ICON_FILES} DESTINATION share/icons/hicolor/scalable/apps)
 install(FILES ${TRANSLATIONS_FILES} DESTINATION share/mdiedit/translations-qm)
+install(FILES ${SYNTAX_FILES} DESTINATION share/mdiedit/syntax)
 
 # building tarball with CPack -------------------------------------------------
 include (InstallRequiredSystemLibraries)

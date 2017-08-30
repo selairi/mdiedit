@@ -40,17 +40,77 @@
 #define SYNTAXHIGHLIGHTER_H
 
 #include <QSyntaxHighlighter>
+#include <QList>
+#include <QRegularExpression>
+#include "globalconfig.h"
+#include "document.h"
+#include "textblockdata.h"
+
+struct Syntax;
+struct SyntaxStartEnd;
 
 class SyntaxHighlighter:public QSyntaxHighlighter
 {
     Q_OBJECT
 
 public:
-    SyntaxHighlighter(QObject * parent);
+    SyntaxHighlighter(QObject * parent, const QPalette & palette, GlobalConfig *globalConfig);
     void highlightBlock(const QString & text);
+    void matchParenthesis(QTextBlock block, int pos);
+    
+    GlobalConfig *globalConfig;
+
+public slots:
+    void setFileName(QString fileName);
 
 private:
+    enum BlockState {None = -1, Other};
+    
+    QList<Syntax*> loadSyntaxFromFile(QString file);
+    QList<Syntax*> loadSyntaxFrom(QJsonDocument &json);
+    Syntax *matchSyntaxToFileName(QString fileName, QList<Syntax*> list);
+
+    struct FormatToApply {
+        int offset, length;
+        QTextCharFormat format;
+        int state;
+    };
+    void hightlightText(const QString & text, const QTextCharFormat & format, 
+        const QList<QRegularExpression> & regList, int offset, FormatToApply *formatToApply);
+    void hightlightText(const QString & text, const QTextCharFormat & format, 
+        const QList<SyntaxStartEnd> & regList, int &state, int offset, FormatToApply *formatToApply);
+
     QTextCharFormat tabPositionFormat;
+    QTextCharFormat wordsFormat;
+    QTextCharFormat commentsFormat;
+    QTextCharFormat stringsFormat;
+    static QList<Syntax*> syntaxList;
+    Syntax *syntax;
+    
+    QRegularExpression parenthesis;
+    QString startParenthesisList;
+    QTextBlock startParenthesisBlock, endParenthesisBlock;
+    Parenthesis startParenthesis, endParenthesis;
+    static QHash<QChar,QChar> parenthesisPair;
+};
+
+struct SyntaxStartEnd
+{
+    QRegularExpression start, end;
+    bool samePatternOk;
+};
+
+struct Syntax 
+{
+    int referenceCount;
+    QString title;
+    QList<QRegularExpression> fileType;
+    QList<QRegularExpression> words;
+    QList<QRegularExpression> comments;
+    QList<QRegularExpression> strings;
+    QList<SyntaxStartEnd> wordsBlock;
+    QList<SyntaxStartEnd> commentsBlock;
+    QList<SyntaxStartEnd> stringsBlock;
 };
 
 #endif

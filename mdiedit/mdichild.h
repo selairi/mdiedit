@@ -93,6 +93,7 @@ private slots:
     void documentWasModified();
     void documentContentsChanged();
     void documentChanged(int position, int charsRemoved, int charsAdded);
+    void matchParenthesisPair();
 
 private:
     bool maybeSave();

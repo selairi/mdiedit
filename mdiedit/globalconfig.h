@@ -55,6 +55,18 @@ public:
     bool replaceTabsBySpacesOk;
     int tabsSpacesSize;
     bool autoindent;
+    inline bool isSyntaxHighlight() {return syntaxHighlightOk;};
+    void setSyntaxHighlight(bool activatedOk);
+    inline bool isHighlightParenthesisMatch() {return highlightParenthesisMatchOk;};
+    void setHighlightParenthesisMatch(bool activatedOk);
+    
+
+signals:
+    void syntaxHighlightChanged(bool activatedOk);
+
+private:
+    bool syntaxHighlightOk;
+    bool highlightParenthesisMatchOk;
 };
 
 #endif

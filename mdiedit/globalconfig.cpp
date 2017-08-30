@@ -41,6 +41,18 @@
 GlobalConfig::GlobalConfig(QObject *parent):QObject(parent)
 {
     snipplesActivateOk = replaceTabsBySpacesOk = false;
+    syntaxHighlightOk = highlightParenthesisMatchOk = true;
     autoindent = true;
     tabsSpacesSize = 4;
+}
+
+void GlobalConfig::setSyntaxHighlight(bool activatedOk)
+{
+    syntaxHighlightOk = activatedOk;
+    emit syntaxHighlightChanged(activatedOk);
+}
+
+void GlobalConfig::setHighlightParenthesisMatch(bool activatedOk)
+{
+    highlightParenthesisMatchOk = activatedOk;
 }
