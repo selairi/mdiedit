@@ -65,5 +65,25 @@
         "stringsBlock": [
             {"start": "\\$\\$", "end": "\\$\\$"}
         ]
+    },
+    {
+        "title": "XML",
+        "fileType": [
+            ".*\.(xml|html|htm)$"
+        ],
+        "words": [
+            "<[^!][^>]*>",
+            "&[^;[:space:]]*;"
+        ],
+        "comments": [
+        ],
+        "strings": [
+        ],
+        "wordsBlock": [],
+        "commentsBlock": [
+            {"start": "<!--", "end": "-->"}
+        ],
+        "stringsBlock": [
+        ]
     }
 ]
