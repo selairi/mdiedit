@@ -453,6 +453,10 @@ void MdiChild::focusInEvent(QFocusEvent * event)
         _document->setLastView(this);
     }
     QPlainTextEdit::focusInEvent(event);
+    if(event->gotFocus())
+    {
+        emit updateWindowName(this);
+    }
 }
 
 void MdiChild::updateTabsSize()

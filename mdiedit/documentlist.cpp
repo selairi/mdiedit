@@ -141,6 +141,7 @@ void DocumentList::updateDocument(MdiChild *mdichild)
     if(item != nullptr) {
         QString name = mdichild->userFriendlyCurrentFile() + (mdichild->isWindowModified()?"*":"");
         item->setText(0, name);
+        treeWidget->setCurrentItem(item);
     }
 }
 
