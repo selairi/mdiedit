@@ -48,6 +48,7 @@
 
 struct Syntax;
 struct SyntaxStartEnd;
+struct FormatToApply;
 
 class SyntaxHighlighter:public QSyntaxHighlighter
 {
@@ -69,16 +70,13 @@ private:
     QList<Syntax*> loadSyntaxFromFile(QString file);
     QList<Syntax*> loadSyntaxFrom(QJsonDocument &json);
     Syntax *matchSyntaxToFileName(QString fileName, QList<Syntax*> list);
-
-    struct FormatToApply {
-        int offset, length;
-        QTextCharFormat format;
-        int state;
-    };
+    
     void hightlightText(const QString & text, const QTextCharFormat & format, 
         const QList<QRegularExpression> & regList, int offset, FormatToApply *formatToApply);
     void hightlightText(const QString & text, const QTextCharFormat & format, 
         const QList<SyntaxStartEnd> & regList, int &state, int offset, FormatToApply *formatToApply);
+    void hightlightTextInside(const QString & text, const SyntaxStartEnd & syntaxInside, 
+        int offset, int final);
 
     QTextCharFormat tabPositionFormat;
     QTextCharFormat wordsFormat;
@@ -98,6 +96,9 @@ struct SyntaxStartEnd
 {
     QRegularExpression start, end;
     bool samePatternOk;
+    QList<QRegularExpression> words;
+    QList<QRegularExpression> comments;
+    QList<QRegularExpression> strings;
 };
 
 struct Syntax 
@@ -111,6 +112,14 @@ struct Syntax
     QList<SyntaxStartEnd> wordsBlock;
     QList<SyntaxStartEnd> commentsBlock;
     QList<SyntaxStartEnd> stringsBlock;
+};
+
+struct FormatToApply {
+    int offset, length;
+    QTextCharFormat format;
+    int state;
+    SyntaxStartEnd syntaxInside;
+    bool syntaxInsideOk;
 };
 
 #endif

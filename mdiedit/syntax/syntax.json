@@ -26,7 +26,12 @@
         ],
         "wordsBlock": [],
         "commentsBlock": [
-            {"start": "/\\*", "end": "\\*/"}
+            {
+                "start": "/\\*", "end": "\\*/", 
+                "words": ["TODO"],
+                "comments": [],
+                "strings": []
+            }
         ],
         "stringsBlock": []
     },
@@ -72,14 +77,31 @@
             ".*\.(xml|html|htm)$"
         ],
         "words": [
-            "<[^!][^>]*>",
             "&[^;[:space:]]*;"
         ],
         "comments": [
         ],
         "strings": [
         ],
-        "wordsBlock": [],
+        "wordsBlock": [
+            {
+                "start": "<[^!]", 
+                "end": ">",
+                "words": ["TODO"],
+                "comments": [],
+                "strings": [
+                    "'(\\\\'|[^'])*'",
+                    "\"(\\\\\"|[^\"])*\""
+                ]
+            },
+            {
+                "start": "<![Dd][Oo][Cc][Tt][Yy][Pp][Ee]", 
+                "end": ">",
+                "words": [],
+                "comments": [],
+                "strings": []
+            }
+        ],
         "commentsBlock": [
             {"start": "<!--", "end": "-->"}
         ],

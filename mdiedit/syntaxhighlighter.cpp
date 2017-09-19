@@ -103,6 +103,12 @@ QList<SyntaxStartEnd> jsonToStartEndList(QJsonArray array)
         se.start = regExpStart;
         se.end = regExpEnd;
         se.samePatternOk = (obj.value("start").toString() == obj.value("end").toString());
+        if(obj.contains("words"))
+            se.words = jsonToList(obj.value("words").toArray());
+        if(obj.contains("comments"))
+            se.comments = jsonToList(obj.value("comments").toArray());
+        if(obj.contains("strings"))
+            se.strings = jsonToList(obj.value("strings").toArray());
         list.append(se);
     }
     return list;
@@ -280,6 +286,8 @@ void SyntaxHighlighter::hightlightText(const QString & text, const QTextCharForm
                 }
                 formatToApply->length = commentLength;
                 formatToApply->format = format;
+                formatToApply->syntaxInside = re;
+                formatToApply->syntaxInsideOk = true;
             }
         }
     }
@@ -355,6 +363,22 @@ void SyntaxHighlighter::matchParenthesis(QTextBlock block, int pos)
     }
 }
 
+void SyntaxHighlighter::hightlightTextInside(const QString & text, const SyntaxStartEnd & syntaxInside, int offset, int final)
+{
+    FormatToApply formatToApply;
+    while(offset >= 0 && offset < final) {
+        formatToApply.offset = -1;
+        hightlightText(text, wordsFormat, syntaxInside.words, offset, &formatToApply);
+        hightlightText(text, stringsFormat, syntaxInside.strings, offset, &formatToApply);
+        hightlightText(text, commentsFormat, syntaxInside.comments, offset, &formatToApply);
+        if(formatToApply.offset >= 0 && formatToApply.offset < final)
+            setFormat(formatToApply.offset, formatToApply.length, formatToApply.format);
+        else
+            break;
+        offset = formatToApply.offset + formatToApply.length;
+    }
+}
+
 void SyntaxHighlighter::highlightBlock(const QString & text)
 {
     QList<Parenthesis> parenthesisList;
@@ -374,6 +398,7 @@ void SyntaxHighlighter::highlightBlock(const QString & text)
         while(offset >= 0) {
             formatToApply.offset = -1;
             formatToApply.state = BlockState::None;
+            formatToApply.syntaxInsideOk = false;
             int state = BlockState::Other;
             hightlightText(text, wordsFormat, syntax->words, offset, &formatToApply);
             hightlightText(text, stringsFormat, syntax->strings, offset, &formatToApply);
@@ -384,6 +409,11 @@ void SyntaxHighlighter::highlightBlock(const QString & text)
             hightlightText(text, commentsFormat, syntax->commentsBlock, state, offset, &formatToApply);
             if(formatToApply.offset >= 0) {
                 setFormat(formatToApply.offset, formatToApply.length, formatToApply.format);
+                // commentsBlock, wordsBlock or stringsBlock could contains words that should be
+                // hightlighted:
+                if(formatToApply.syntaxInsideOk) {
+                    hightlightTextInside(text, formatToApply.syntaxInside, formatToApply.offset, formatToApply.offset+formatToApply.length);
+                }
                 if(formatToApply.state != BlockState::None) {
                     setCurrentBlockState(formatToApply.state);
                     offset = -1;
