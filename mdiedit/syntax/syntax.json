@@ -129,5 +129,31 @@
         "stringsBlock": [
             {"start": "\"\"\"", "end": "\"\"\""}
         ]
+    },
+    {
+        "title": "Javascript",
+        "fileType": [
+            ".*\.(js)$"
+        ],
+        "words": [
+            "\\b(const|function|let|this|typeof|var|void|for|if|while|with|do|else|case|default|switch|export|try|throw|catch|new|delete|continue|break|return|yield)\\b"
+        ],
+        "comments": [
+            "//.*"
+        ],
+        "strings":  [
+            "'(\\\\'|[^'])*'"
+            , "\"(\\\\\"|[^\"])*\""
+        ],
+        "wordsBlock": [],
+        "commentsBlock": [
+            {
+                "start": "/\\*", "end": "\\*/", 
+                "words": ["TODO"],
+                "comments": [],
+                "strings": []
+            }
+        ],
+        "stringsBlock": []
     }
 ]
