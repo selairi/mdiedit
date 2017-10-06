@@ -340,6 +340,8 @@ bool MainWindow::findNext()
             msgBox.setText(tr("Not found."));
             msgBox.exec();
             putCursorInNotFound(flags);
+        } else {
+            activeMdiChild()->ensureCursorVisible();
         }
         return ok;
     }
