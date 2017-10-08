@@ -69,6 +69,7 @@ public:
     void blockMode(bool enableOk = true);
     void setWindowTitle(const QString &name);
     void setWindowModified(bool modifiedOk);
+    inline SyntaxHighlighter *getSyntaxHightlighter() {return syntaxHightlighter;};
 
     QHash<QString,QString> *snipples;
     GlobalConfig *globalConfig;

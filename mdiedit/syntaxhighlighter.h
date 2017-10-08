@@ -58,6 +58,9 @@ public:
     SyntaxHighlighter(QObject * parent, const QPalette & palette, GlobalConfig *globalConfig);
     void highlightBlock(const QString & text);
     void matchParenthesis(QTextBlock block, int pos);
+    void setSyntax(QString syntaxName);
+    inline Syntax* getSyntax() {return syntax;};
+    static QList<Syntax*> syntaxsList(); 
     
     GlobalConfig *globalConfig;
 
@@ -67,8 +70,8 @@ public slots:
 private:
     enum BlockState {None = -1, Other};
     
-    QList<Syntax*> loadSyntaxFromFile(QString file);
-    QList<Syntax*> loadSyntaxFrom(QJsonDocument &json);
+    static QList<Syntax*> loadSyntaxFromFile(QString file);
+    static QList<Syntax*> loadSyntaxFrom(QJsonDocument &json);
     Syntax *matchSyntaxToFileName(QString fileName, QList<Syntax*> list);
     
     void hightlightText(const QString & text, const QTextCharFormat & format, 

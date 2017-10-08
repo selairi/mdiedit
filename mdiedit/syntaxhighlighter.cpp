@@ -179,6 +179,8 @@ Syntax *SyntaxHighlighter::matchSyntaxToFileName(QString fileName, QList<Syntax*
 
 void SyntaxHighlighter::setFileName(QString fileName)
 {
+    if(syntax != nullptr)
+        syntax->referenceCount--;
     syntax = matchSyntaxToFileName(fileName, syntaxList);
     if(syntax == nullptr) {
         // Syntax must be loaded from config file
@@ -192,17 +194,64 @@ void SyntaxHighlighter::setFileName(QString fileName)
         }
         if(syntax != nullptr)
             syntaxList.append(syntax);
-        // Delete disabled syntax
-        for(Syntax *item: syntaxList) {
-            if(item->referenceCount <= 0) {
-                syntaxList.removeOne(item);
-                delete item;
-                break;
-            }
+    }
+    // Delete disabled syntax
+    for(Syntax *item: syntaxList) {
+        if(item->referenceCount <= 0) {
+            syntaxList.removeOne(item);
+            delete item;
+            break;
         }
     }
     rehighlight();
 }
+
+void SyntaxHighlighter::setSyntax(QString syntaxName)
+{
+    if(syntax != nullptr) {
+        if(syntax->title == syntaxName)
+            return;
+        else {
+            syntax->referenceCount--;
+            syntax = nullptr;
+        }
+    }
+    bool foundSyntaxOk = false;
+    for(Syntax *item: syntaxList) {
+        if(item->title == syntaxName) {
+            item->referenceCount++;
+            syntax = item;
+            foundSyntaxOk = true;
+        }
+    }
+    if(!foundSyntaxOk) {
+        QList<Syntax*> list = loadSyntaxFromFile(QString(SYNTAX_PATH "/syntax.json"));
+        for(Syntax *item: list) {
+            if(item->title == syntaxName) {
+                item->referenceCount++;
+                syntax = item;
+                syntaxList.append(syntax);
+                foundSyntaxOk = true;
+            }
+        }
+        // Delete syntaxs which haven't been used
+        for(Syntax *item: list) {
+            if(item->referenceCount == 0) {
+                delete item;
+            }
+        }
+    }
+    // Delete syntaxs which haven't been used
+    for(Syntax *item: syntaxList) {
+        if(item->referenceCount <= 0) {
+            syntaxList.removeOne(item);
+            delete item;
+            break;
+        }
+    }
+    rehighlight();
+}
+
 
 void SyntaxHighlighter::hightlightText(const QString & text, const QTextCharFormat & format, 
     const QList<QRegularExpression> & regList, int offset, FormatToApply *formatToApply)
@@ -466,6 +515,13 @@ void SyntaxHighlighter::highlightBlock(const QString & text)
             }
         }
     }
+}
+
+
+QList<Syntax*> SyntaxHighlighter::syntaxsList()
+{
+    QList<Syntax*> list = loadSyntaxFromFile(QString(SYNTAX_PATH "/syntax.json"));
+    return list;
 }
 
 

@@ -71,6 +71,7 @@ MainWindow::MainWindow()
             this, SLOT(setActiveSubWindow(QWidget*)));
     actionsMapper = new QSignalMapper(this);
     tabsGroupAct = new QActionGroup(this);
+    syntaxGroupAct = new QActionGroup(this);
     
     fileBrowserWidget = NULL;
 
@@ -138,6 +139,10 @@ void MainWindow::createDockWidgets()
 #include <QTime>
 void MainWindow::showLineNumber() {
     MdiChild *child = activeMdiChild();
+    showLineNumber(child);
+}
+
+void MainWindow::showLineNumber(MdiChild *child) {
     if (child && lineNumberLabel) {
         int lineno = child->textCursor().blockNumber();
         int columnno = child->textCursor().positionInBlock();
@@ -147,13 +152,39 @@ void MainWindow::showLineNumber() {
 }
 
 void MainWindow::updateMdiChild(QMdiSubWindow *) {
-    if(activeMdiChild()) {
-        QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
-        for (int i = 0; i < windows.size(); ++i) {
-            MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
-            disconnect(child, SIGNAL(cursorPositionChanged()), this, SLOT(showLineNumber()));
+    MdiChild *mdichild = activeMdiChild();
+    if(mdichild) {
+        // Update line number in MainWindow
+        {
+            QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+            for (int i = 0; i < windows.size(); ++i) {
+                MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
+                disconnect(child, SIGNAL(cursorPositionChanged()), this, SLOT(showLineNumber()));
+            }
+            connect(activeMdiChild(), SIGNAL(cursorPositionChanged()), this, SLOT(showLineNumber()));
+            showLineNumber(mdichild);
         }
-        connect(activeMdiChild(), SIGNAL(cursorPositionChanged()), this, SLOT(showLineNumber()));
+        {
+            // Set active syntax
+            Syntax *syntax = mdichild->getSyntaxHightlighter()->getSyntax();
+            bool syntaxFoundOk = false;
+            if(syntax != nullptr) {
+                if(syntaxsAct.contains(syntax->title)) {
+                    QAction *action = syntaxsAct[syntax->title];
+                    if(action->text() == syntax->title) {
+                        disconnect(actionsMapper, SIGNAL(mapped(QString)), this, SLOT(setSyntax(QString)));
+                        action->setChecked(true);
+                        connect(actionsMapper, SIGNAL(mapped(QString)), this, SLOT(setSyntax(QString)));
+                        syntaxFoundOk = true;
+                    }
+                }
+            }
+            if(!syntaxFoundOk) {
+                disconnect(actionsMapper, SIGNAL(mapped(QString)), this, SLOT(setSyntax(QString)));
+                syntaxsAct["None"]->setChecked(true);
+                connect(actionsMapper, SIGNAL(mapped(QString)), this, SLOT(setSyntax(QString)));
+            }
+        }
     }
 }
 
@@ -461,6 +492,7 @@ void MainWindow::goToLine()
             cursor.movePosition(QTextCursor::Start);
             cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, lineno-1);
             child->setTextCursor(cursor);
+            child->ensureCursorVisible();
         }
     }
 }
@@ -740,6 +772,21 @@ void MainWindow::createActions()
     highlightParenthesisMatchAct->setCheckable(true);
     connect(highlightParenthesisMatchAct, SIGNAL(changed()), this, SLOT(highlightParenthesisMatch()));
     
+    {
+        QList<Syntax*> list = SyntaxHighlighter::syntaxsList();
+        int syntaxsActLength = list.size()+1;
+        for(int i=0; i<syntaxsActLength; i++) {
+            QString syntaxName = (i == 0) ? "None" : list[i-1]->title;
+            QAction *action = new QAction(syntaxName, this);
+            syntaxsAct[syntaxName] = action;
+            action->setCheckable(true);
+            syntaxGroupAct->addAction(action);
+            connect(action, SIGNAL(changed()), actionsMapper, SLOT(map()));
+            actionsMapper->setMapping(action, syntaxName);
+        }
+        connect(actionsMapper, SIGNAL(mapped(QString)), this, SLOT(setSyntax(QString)));
+    }
+    
     wordwrapAct = new QAction( tr("&Wordwrap"), this);
     wordwrapAct->setCheckable(true);
     connect(wordwrapAct, SIGNAL(triggered()), this, SLOT(wordwrapMode()));
@@ -868,6 +915,17 @@ void MainWindow::createMenus()
     syntaxHighlightMenu = editMenu->addMenu(tr("Syntax"));
     syntaxHighlightMenu->addAction(syntaxHighlightAct);
     syntaxHighlightMenu->addAction(highlightParenthesisMatchAct);
+    syntaxHighlightMenu->addSeparator();
+    {
+        QStringList list(syntaxsAct.keys());
+        QString none("None");
+        list.removeOne(none);
+        list.sort();
+        list.prepend(none);
+        for(QString key : list) {
+            syntaxHighlightMenu->addAction(syntaxsAct[key]);
+        }
+    }
     
     toolsMenu = menuBar()->addMenu(tr("&Tools"));
     toolsMenu->addAction(showFileBrowserAct);
@@ -1050,5 +1108,12 @@ void MainWindow::showEvent(QShowEvent *event)
         toolsMenu->addMenu(popupMenu = createPopupMenu());
         popupMenu->setTitle(tr("Show/Hide Tools"));
     }
+}
+
+void MainWindow::setSyntax(QString syntaxName)
+{
+    MdiChild *mdichild = activeMdiChild();
+    if(mdichild != nullptr)
+        mdichild->getSyntaxHightlighter()->setSyntax(syntaxName);
 }
 

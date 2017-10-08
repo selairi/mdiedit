@@ -108,7 +108,8 @@ private slots:
     MdiChild *createMdiChild();
     void switchLayoutDirection();
     void setActiveSubWindow(QWidget *window);
-    void showLineNumber() ;
+    void showLineNumber();
+    void showLineNumber(MdiChild *mdichild);
     void updateMdiChild(QMdiSubWindow * child);
     void newView();
     void saveAll();
@@ -118,6 +119,7 @@ private slots:
     void showMessage(QString text);
     void showFileBrowser(bool visibility);
     void showFileBrowser();
+    void setSyntax(QString syntaxName);
 
 private:
     FindDialog *findDialog;
@@ -171,6 +173,8 @@ private:
     QAction *replaceTabsBySpacesAct;
     QAction *syntaxHighlightAct;
     QAction *highlightParenthesisMatchAct;
+    QHash<QString,QAction* > syntaxsAct; // Pointer to array of available syntaxs.
+    QActionGroup *syntaxGroupAct;
     QMenu *tabsMenu;
     QMenu *syntaxHighlightMenu;
     QAction **tabsSpacesAct; // Pointer to array of N_TABS_SPACES elements
