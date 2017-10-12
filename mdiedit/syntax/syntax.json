@@ -116,13 +116,15 @@
         "words": [
             "\\b(and|as|assert|break|class|continue|def|del|elif|else|except|exec|finally|for|from)\\b"
             , "\\b(global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while|with|yield)\\b"
+            , "\\b(True|False|None)\\b"
         ],
         "comments": [
             "#.*"
         ],
         "strings": [
             "'(\\\\'|[^'])*'"
-            , "\"(\\\\\"|[^\"])*\""
+            , "\"[^\"](\\\\\"|[^\"])*\""
+            , "(?<main>\"\")[^\"]"
         ],
         "wordsBlock": [],
         "commentsBlock": [],

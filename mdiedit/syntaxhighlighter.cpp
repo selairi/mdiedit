@@ -257,12 +257,19 @@ void SyntaxHighlighter::hightlightText(const QString & text, const QTextCharForm
     const QList<QRegularExpression> & regList, int offset, FormatToApply *formatToApply)
 {
     for(const QRegularExpression & re : regList) {
-        QRegularExpressionMatchIterator i = re.globalMatch(text, offset);
-        if (i.hasNext()) {
-            QRegularExpressionMatch match = i.next();
-            if(formatToApply->offset == -1 || match.capturedStart() < formatToApply->offset) { 
-                formatToApply->offset = match.capturedStart();
-                formatToApply->length = match.capturedLength();
+        QRegularExpressionMatch match = re.match(text, offset);
+        if (match.hasMatch()) {
+            bool isCapturedMainGroup;
+            int capturedStart = match.capturedStart("main");
+            if(capturedStart < 0) {
+                isCapturedMainGroup = false;
+                capturedStart = match.capturedStart();
+            } else {
+                isCapturedMainGroup = true;
+            }
+            if(formatToApply->offset == -1 || capturedStart < formatToApply->offset) { 
+                formatToApply->offset = capturedStart;
+                formatToApply->length = isCapturedMainGroup ? match.capturedLength("main") : match.capturedLength();
                 formatToApply->format = format;
             }
         }
