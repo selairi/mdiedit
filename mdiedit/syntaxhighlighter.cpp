@@ -276,6 +276,22 @@ void SyntaxHighlighter::hightlightText(const QString & text, const QTextCharForm
     }
 }
 
+static void _endMacthValues(QRegularExpressionMatchIterator &endMatchIt, int &startIndex, int &endIndex, int &endMatchedLength)
+{
+    if(endMatchIt.hasNext()) {
+        QRegularExpressionMatch match = endMatchIt.next();
+        endIndex = match.capturedStart("main");
+        if(endIndex < 0) {
+            endIndex = match.capturedStart();
+            endMatchedLength = match.capturedLength();
+        } else {
+            endMatchedLength = match.capturedLength("main");
+        }
+    } else {
+        endIndex = -1;
+    }
+}
+
 void SyntaxHighlighter::hightlightText(const QString & text, const QTextCharFormat & format,
     const QList<SyntaxStartEnd> & regList, int &state, int offset, FormatToApply *formatToApply)
 {
@@ -294,7 +310,9 @@ void SyntaxHighlighter::hightlightText(const QString & text, const QTextCharForm
         if (previousBlockState() != state || offset > 0) {
             if(startMatchIt.hasNext()) {
                 QRegularExpressionMatch match = startMatchIt.next();
-                startIndex = match.capturedStart();
+                startIndex = match.capturedStart("main");
+                if(startIndex < 0)
+                    startIndex = match.capturedStart();
             } else {
                 startIndex = -1;
             }
@@ -302,31 +320,13 @@ void SyntaxHighlighter::hightlightText(const QString & text, const QTextCharForm
         
         if(startIndex >= 0) {
             int endMatchedLength = 0;
-            if(endMatchIt.hasNext()) {
-                QRegularExpressionMatch match = endMatchIt.next();
-                endIndex = match.capturedStart();
-                endMatchedLength = match.capturedLength();
-            } else {
-                endIndex = -1;
-            }
+            _endMacthValues(endMatchIt, startIndex, endIndex, endMatchedLength);
             if(re.samePatternOk) {
                 if(previousBlockState() != state && endIndex == startIndex) {
-                    if(endMatchIt.hasNext()) {
-                        QRegularExpressionMatch match = endMatchIt.next();
-                        endIndex = match.capturedStart();
-                        endMatchedLength = match.capturedLength();
-                    } else {
-                        endIndex = -1;
-                    }
+                    _endMacthValues(endMatchIt, startIndex, endIndex, endMatchedLength);
                 } else if(previousBlockState() == state && endIndex == startIndex) {
                     if(startIndex != 0) {
-                        if(endMatchIt.hasNext()) {
-                            QRegularExpressionMatch match = endMatchIt.next();
-                            endIndex = match.capturedStart();
-                            endMatchedLength = match.capturedLength();
-                        } else {
-                            endIndex = -1;
-                        }
+                        _endMacthValues(endMatchIt, startIndex, endIndex, endMatchedLength);
                     }
                 }
             }
