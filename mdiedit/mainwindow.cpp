@@ -52,6 +52,7 @@
 #include "mdichild.h"
 #include "snipplesdialog.h"
 #include "completiondialog.h"
+#include "ctagsbrowser.h"
 
 MainWindow::MainWindow()
 {
@@ -815,6 +816,12 @@ void MainWindow::createActions()
     keysShowFileBrowserAct << QKeySequence(Qt::Key_F5);
     showFileBrowserAct->setShortcuts(keysShowFileBrowserAct);
     connect(showFileBrowserAct, SIGNAL(triggered()), this, SLOT(showFileBrowser()));
+    
+    ctagsBrowserAct = new QAction( tr("CTAGS browser"), this);
+    QList<QKeySequence> keysCTAGSBrowserAct;
+    keysCTAGSBrowserAct << QKeySequence(Qt::Key_F6);
+    ctagsBrowserAct->setShortcuts(keysCTAGSBrowserAct);
+    connect(ctagsBrowserAct, SIGNAL(triggered()), this, SLOT(showCTAGSBrowser()));
 
     newViewAct = new QAction( tr("&New view"), this);
     connect(newViewAct, SIGNAL(triggered()), this, SLOT(newView()));
@@ -929,6 +936,7 @@ void MainWindow::createMenus()
     
     toolsMenu = menuBar()->addMenu(tr("&Tools"));
     toolsMenu->addAction(showFileBrowserAct);
+    toolsMenu->addAction(ctagsBrowserAct);
 
     windowMenu = menuBar()->addMenu(tr("&Window"));
     updateWindowMenu();
@@ -1117,3 +1125,24 @@ void MainWindow::setSyntax(QString syntaxName)
         mdichild->getSyntaxHightlighter()->setSyntax(syntaxName);
 }
 
+void MainWindow::showCTAGSBrowser()
+{
+    QStringList files;
+    foreach (QMdiSubWindow *window, mdiArea->subWindowList()) {
+        MdiChild *mdiChild = qobject_cast<MdiChild *>(window->widget());
+        files << mdiChild->currentFile();
+    }
+    CTAGSBrowser *browser = new CTAGSBrowser(this, files);
+    if(browser->exec() == QDialog::Accepted) {
+        open(browser->file);
+        MdiChild *child = activeMdiChild();
+        if (child) {
+            QTextCursor cursor = child->textCursor();
+            cursor.movePosition(QTextCursor::Start);
+            cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, browser->line-1);
+            child->setTextCursor(cursor);
+            child->ensureCursorVisible();
+        }
+    }
+    delete browser;
+}

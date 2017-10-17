@@ -119,6 +119,7 @@ private slots:
     void showMessage(QString text);
     void showFileBrowser(bool visibility);
     void showFileBrowser();
+    void showCTAGSBrowser();
     void setSyntax(QString syntaxName);
 
 private:
@@ -181,6 +182,7 @@ private:
     QActionGroup *tabsGroupAct;
     
     QAction *showFileBrowserAct;
+    QAction *ctagsBrowserAct;
     QMenu *popupMenu;
     
     QAction *newViewAct;
