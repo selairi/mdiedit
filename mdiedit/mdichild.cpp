@@ -62,6 +62,7 @@ MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(p
 	isUntitled = true;
 	autoindent = true;
 	snipples = NULL;
+	snipplesMode.isEnabled = false;
 	this->globalConfig = globalConfig;
 	updateTabsSize();
 	setCursorWidth(3);
@@ -91,69 +92,84 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
     }
     
     if(globalConfig->snipplesActivateOk && snipples!=NULL && e->key() == Qt::Key_Tab && e->modifiers() == Qt::NoModifier &&  ! textCursor().hasSelection()) {
-        QTextCursor cursor = textCursor();
-        QTextCursor cursorOriginal = textCursor();
-        cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
-        QString text = cursor.selectedText();
-        if(snipples->contains(text)) {
-           setTextCursor(cursor);
-           insertPlainText(snipples->value(text));
-           return;
-        } else if(globalConfig->replaceTabsBySpacesOk) {
-           insertSpacesAsTab(cursorOriginal);
-           return;
+        if( ! snipplesMode.isEnabled ) {
+            QTextCursor cursor = textCursor();
+            QTextCursor cursorOriginal = textCursor();
+            cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
+            QString text = cursor.selectedText();
+            if(snipples->contains(text)) {
+               setTextCursor(cursor);
+               enableSnipplesMode(snipples->value(text), cursor);
+               return;
+            } else if(globalConfig->replaceTabsBySpacesOk) {
+               insertSpacesAsTab(cursorOriginal);
+               return;
+            }
+        } else {
+            QTextCursor nextCursor, cursor = textCursor();
+            for(int i=0; i < 10; i++) {
+                if( ! snipplesMode.cursorMarks[(i+1)%10].isEmpty()) {
+                    nextCursor = snipplesMode.cursorMarks[(i+1)%10].takeFirst();
+                    nextCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
+                    setTextCursor(nextCursor);
+                    return;
+                }
+            }
+            snipplesMode.isEnabled = false;
+            insertSpacesAsTab(cursor);
+            return;
         }
     } else if(e->key() == Qt::Key_Tab && e->modifiers() == Qt::NoModifier && textCursor().hasSelection()) {
-    	QTextCursor cursor = textCursor();
-    	int start = cursor.selectionStart() ;
-    	int end = cursor.selectionEnd() ;
-    	cursor.setPosition(end);
-    	cursor.setPosition(start, QTextCursor::KeepAnchor);
-    	cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
-    	QString text = cursor.selectedText();
-    	text.replace(QChar(QChar::ParagraphSeparator), "\n");
-    	if(globalConfig->replaceTabsBySpacesOk) {
-    	    QString spaces(globalConfig->tabsSpacesSize, ' ');
-    	    text = spaces + text;
-    	    spaces ="\n" + spaces;
-    	    text.replace(QChar('\n'), spaces);
-    	} else {
-    	    text = "\t" + text;
-    	    text.replace(QChar('\n'), "\n\t");
-    	}
-    	start = cursor.selectionStart() ;
-    	cursor.insertText(text);
-    	cursor.setPosition(start, QTextCursor::KeepAnchor);
-    	setTextCursor(cursor);
-    	return;
+        	QTextCursor cursor = textCursor();
+        	int start = cursor.selectionStart() ;
+        	int end = cursor.selectionEnd() ;
+        	cursor.setPosition(end);
+        	cursor.setPosition(start, QTextCursor::KeepAnchor);
+        	cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
+        	QString text = cursor.selectedText();
+        	text.replace(QChar(QChar::ParagraphSeparator), "\n");
+        	if(globalConfig->replaceTabsBySpacesOk) {
+        	    QString spaces(globalConfig->tabsSpacesSize, ' ');
+        	    text = spaces + text;
+        	    spaces ="\n" + spaces;
+        	    text.replace(QChar('\n'), spaces);
+        	} else {
+        	    text = "\t" + text;
+        	    text.replace(QChar('\n'), "\n\t");
+        	}
+        	start = cursor.selectionStart() ;
+        	cursor.insertText(text);
+        	cursor.setPosition(start, QTextCursor::KeepAnchor);
+        	setTextCursor(cursor);
+        	return;
     } else if(e->key() == Qt::Key_Backtab && e->modifiers() == Qt::ShiftModifier && textCursor().hasSelection()) {
-    	QTextCursor cursor = textCursor();
-    	int start = cursor.selectionStart() ;
-    	int end = cursor.selectionEnd() ;
-    	cursor.setPosition(end);
-    	cursor.setPosition(start, QTextCursor::KeepAnchor);
-    	cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
-    	QString text = cursor.selectedText();
-    	text.replace(QChar(QChar::ParagraphSeparator), "\n");
-    	text.replace(QRegExp("^[ \t]"), "");
-    	text.replace(QRegExp("\n[ \t]"), "\n");
-    	start = cursor.selectionStart() ;
-    	cursor.insertText(text);
-    	cursor.setPosition(start, QTextCursor::KeepAnchor);
-    	setTextCursor(cursor);
-    	return;
+        	QTextCursor cursor = textCursor();
+        	int start = cursor.selectionStart() ;
+        	int end = cursor.selectionEnd() ;
+        	cursor.setPosition(end);
+        	cursor.setPosition(start, QTextCursor::KeepAnchor);
+        	cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
+        	QString text = cursor.selectedText();
+        	text.replace(QChar(QChar::ParagraphSeparator), "\n");
+        	text.replace(QRegExp("^[ \t]"), "");
+        	text.replace(QRegExp("\n[ \t]"), "\n");
+        	start = cursor.selectionStart() ;
+        	cursor.insertText(text);
+        	cursor.setPosition(start, QTextCursor::KeepAnchor);
+        	setTextCursor(cursor);
+        	return;
     } else if(e->key() == Qt::Key_Backtab && e->modifiers() == Qt::ShiftModifier) {
-    	QTextCursor cursor = textCursor();
-    	if( globalConfig->replaceTabsBySpacesOk ) {   
-        	   removeSpacesAsTab(cursor);
-    	} else {
-    	   cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
-    	   if( cursor.selectedText() == "\t" ) {
-    	       cursor.removeSelectedText();
-    	       setTextCursor(cursor);
-    	   }
-    	}
-    	return;
+        	QTextCursor cursor = textCursor();
+        	if( globalConfig->replaceTabsBySpacesOk ) {   
+            	   removeSpacesAsTab(cursor);
+        	} else {
+        	   cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, 1);
+        	   if( cursor.selectedText() == "\t" ) {
+        	       cursor.removeSelectedText();
+        	       setTextCursor(cursor);
+        	   }
+        	}
+        	return;
     } else if(e->key() == Qt::Key_Tab && globalConfig->replaceTabsBySpacesOk) {
         	QTextCursor cursor = textCursor();
         	insertSpacesAsTab(cursor);
@@ -493,10 +509,43 @@ void MdiChild::blockMode(bool enableOk)
 
 void MdiChild::matchParenthesisPair()
 {
-    
     if(syntaxHightlighter != nullptr)
         syntaxHightlighter->matchParenthesis(textCursor().block(),
             textCursor().positionInBlock());
+}
+
+void MdiChild::enableSnipplesMode(QString snippleText, QTextCursor cursor)
+{
+    QRegularExpression re("\\$(?<position>[0-9])");
+    QRegularExpressionMatch match;
+    int index;
+    insertPlainText(snippleText);
+    snipplesMode.isEnabled = false;
+    for(index = 0; index < 10; index++)
+        snipplesMode.cursorMarks[index].clear();
+    index = 0;
+    while( (match=re.match(snippleText, index)).hasMatch() ) {
+        index = match.capturedStart("position");
+        if(index < 0)
+            break;
+        bool ok;
+        int position = match.captured("position").toInt(&ok);
+        if(! ok)
+            continue;
+        QTextCursor cursorMark = cursor;
+        cursorMark.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, snippleText.length() - index + 1);
+        snipplesMode.cursorMarks[position].append(cursorMark);
+    }
+    for(index = 0; index < 10; index++) {
+        if(snipplesMode.cursorMarks[(index+1)%10].isEmpty())
+            continue;
+        QTextCursor cursorMark = snipplesMode.cursorMarks[(index+1)%10].takeFirst();
+        cursorMark.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
+        setTextCursor(cursorMark);
+        snipplesMode.isEnabled = true;
+        return;
+    }
+    setTextCursor(cursor);
 }
 
 PlainTextDocumentLayout::PlainTextDocumentLayout(QTextDocument *parent):QPlainTextDocumentLayout(parent)

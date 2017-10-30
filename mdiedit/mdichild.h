@@ -114,6 +114,12 @@ private:
         int startLine;
         int endLine;
     } blockModeData;
+    
+    struct SnipplesMode {
+        QList<QTextCursor> cursorMarks[10];
+        bool isEnabled;
+    } snipplesMode;
+    void enableSnipplesMode(QString snippleText, QTextCursor cursor);
 };
 
 class PlainTextDocumentLayout: public QPlainTextDocumentLayout
