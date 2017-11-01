@@ -108,10 +108,13 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
         } else {
             QTextCursor nextCursor, cursor = textCursor();
             for(int i=0; i < 10; i++) {
-                if( ! snipplesMode.cursorMarks[(i+1)%10].isEmpty()) {
-                    nextCursor = snipplesMode.cursorMarks[(i+1)%10].takeFirst();
+                int index = (i+1)%10;
+                if(! snipplesMode.cursorMarks[index].isEmpty()) {
+                    nextCursor = snipplesMode.cursorMarks[index].takeFirst();
                     nextCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
                     setTextCursor(nextCursor);
+                    if(index == 0 && snipplesMode.cursorMarks[0].isEmpty())
+                        snipplesMode.isEnabled = false;
                     return;
                 }
             }
@@ -537,12 +540,14 @@ void MdiChild::enableSnipplesMode(QString snippleText, QTextCursor cursor)
         snipplesMode.cursorMarks[position].append(cursorMark);
     }
     for(index = 0; index < 10; index++) {
-        if(snipplesMode.cursorMarks[(index+1)%10].isEmpty())
+        int i = (index+1)%10;
+        if(snipplesMode.cursorMarks[i].isEmpty())
             continue;
-        QTextCursor cursorMark = snipplesMode.cursorMarks[(index+1)%10].takeFirst();
+        QTextCursor cursorMark = snipplesMode.cursorMarks[i].takeFirst();
         cursorMark.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
         setTextCursor(cursorMark);
-        snipplesMode.isEnabled = true;
+        if(i!=0 || (i == 0 && ! snipplesMode.cursorMarks[0].isEmpty()))
+            snipplesMode.isEnabled = true;
         return;
     }
     setTextCursor(cursor);
