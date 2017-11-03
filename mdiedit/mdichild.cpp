@@ -63,6 +63,7 @@ MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(p
 	autoindent = true;
 	snipples = NULL;
 	snipplesMode.isEnabled = false;
+	snipplesMode.hasContent = false;
 	this->globalConfig = globalConfig;
 	updateTabsSize();
 	setCursorWidth(3);
@@ -106,20 +107,9 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
                return;
             }
         } else {
-            QTextCursor nextCursor, cursor = textCursor();
-            for(int i=0; i < 10; i++) {
-                int index = (i+1)%10;
-                if(! snipplesMode.cursorMarks[index].isEmpty()) {
-                    nextCursor = snipplesMode.cursorMarks[index].takeFirst();
-                    nextCursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
-                    setTextCursor(nextCursor);
-                    if(index == 0 && snipplesMode.cursorMarks[0].isEmpty())
-                        snipplesMode.isEnabled = false;
-                    return;
-                }
-            }
-            snipplesMode.isEnabled = false;
-            insertSpacesAsTab(cursor);
+            QTextCursor cursor = textCursor();
+            if(! execNextSnipple(cursor))
+                insertSpacesAsTab(cursor);
             return;
         }
     } else if(e->key() == Qt::Key_Tab && e->modifiers() == Qt::NoModifier && textCursor().hasSelection()) {
@@ -539,18 +529,52 @@ void MdiChild::enableSnipplesMode(QString snippleText, QTextCursor cursor)
         cursorMark.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, snippleText.length() - index + 1);
         snipplesMode.cursorMarks[position].append(cursorMark);
     }
-    for(index = 0; index < 10; index++) {
+    if(! execNextSnipple(cursor))
+        setTextCursor(cursor);
+}
+
+bool MdiChild::execNextSnipple(QTextCursor cursor)
+{
+    for(int index = 0; index < 10; index++) {
         int i = (index+1)%10;
         if(snipplesMode.cursorMarks[i].isEmpty())
             continue;
-        QTextCursor cursorMark = snipplesMode.cursorMarks[i].takeFirst();
+        // Jump to the next position
+        QTextCursor cursorFirst;
+        QTextCursor cursorMark = cursorFirst = snipplesMode.cursorMarks[i].takeFirst();
         cursorMark.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
         setTextCursor(cursorMark);
-        if(i!=0 || (i == 0 && ! snipplesMode.cursorMarks[0].isEmpty()))
-            snipplesMode.isEnabled = true;
-        return;
+        if(snipplesMode.hasContent) {
+            // Copy the contents of last position
+            snipplesMode.cursorStartContent.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, 1);
+            int start = snipplesMode.cursorStartContent.position();
+            int end = snipplesMode.cursorEndContent.position();
+            snipplesMode.cursorStartContent.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, end-start);
+            cursorFirst.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, 1);
+            insertPlainText(snipplesMode.cursorStartContent.selectedText());
+            cursorFirst.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, 1);
+            setTextCursor(cursorMark);
+        }
+        if(! snipplesMode.cursorMarks[i].isEmpty()) {
+            snipplesMode.hasContent = true;
+            snipplesMode.cursorEndContent = cursorMark;
+            snipplesMode.cursorStartContent = cursorFirst;
+            snipplesMode.cursorStartContent.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, 1);
+        } else {
+            snipplesMode.hasContent = false;
+        }
+        // Are more positions left?
+        snipplesMode.isEnabled = false;
+        for(i=0; i<10; i++)
+            if(! snipplesMode.cursorMarks[i].isEmpty())
+                snipplesMode.isEnabled = true;
+        if(! snipplesMode.isEnabled)
+            snipplesMode.hasContent = false;
+        return true;
     }
-    setTextCursor(cursor);
+    snipplesMode.isEnabled = false;
+    snipplesMode.hasContent = false;
+    return false;
 }
 
 PlainTextDocumentLayout::PlainTextDocumentLayout(QTextDocument *parent):QPlainTextDocumentLayout(parent)
