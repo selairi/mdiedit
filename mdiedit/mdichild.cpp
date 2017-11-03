@@ -63,7 +63,7 @@ MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(p
 	autoindent = true;
 	snipples = NULL;
 	snipplesMode.isEnabled = false;
-	snipplesMode.hasContent = false;
+	snipplesMode.lastPostionIndex = -1;
 	this->globalConfig = globalConfig;
 	updateTabsSize();
 	setCursorWidth(3);
@@ -540,40 +540,46 @@ bool MdiChild::execNextSnipple(QTextCursor cursor)
         if(snipplesMode.cursorMarks[i].isEmpty())
             continue;
         // Jump to the next position
-        QTextCursor cursorFirst;
-        QTextCursor cursorMark = cursorFirst = snipplesMode.cursorMarks[i].takeFirst();
+        QTextCursor cursorFirst, cursorMark;
+        cursorMark = cursorFirst = snipplesMode.cursorMarks[i].takeFirst();
         cursorMark.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
         setTextCursor(cursorMark);
-        if(snipplesMode.hasContent) {
-            // Copy the contents of last position
+        if(snipplesMode.lastPostionIndex == i) {
             snipplesMode.cursorStartContent.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, 1);
             int start = snipplesMode.cursorStartContent.position();
             int end = snipplesMode.cursorEndContent.position();
             snipplesMode.cursorStartContent.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, end-start);
-            cursorFirst.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, 1);
-            insertPlainText(snipplesMode.cursorStartContent.selectedText());
-            cursorFirst.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, 1);
-            setTextCursor(cursorMark);
+            QString text = snipplesMode.cursorStartContent.selectedText();
+            insertPlainText(text);
+            while(! snipplesMode.cursorMarks[i].isEmpty()) {
+                // Copy the contents of last position
+                cursorMark = snipplesMode.cursorMarks[i].takeFirst();
+                cursorMark.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
+                setTextCursor(cursorMark);
+                insertPlainText(text);
+            }
+            continue;
         }
         if(! snipplesMode.cursorMarks[i].isEmpty()) {
-            snipplesMode.hasContent = true;
             snipplesMode.cursorEndContent = cursorMark;
             snipplesMode.cursorStartContent = cursorFirst;
             snipplesMode.cursorStartContent.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, 1);
-        } else {
-            snipplesMode.hasContent = false;
         }
         // Are more positions left?
+        snipplesMode.lastPostionIndex = i;
         snipplesMode.isEnabled = false;
         for(i=0; i<10; i++)
-            if(! snipplesMode.cursorMarks[i].isEmpty())
+            if(! snipplesMode.cursorMarks[i].isEmpty()) {
                 snipplesMode.isEnabled = true;
+                break;
+            }
         if(! snipplesMode.isEnabled)
-            snipplesMode.hasContent = false;
+            snipplesMode.lastPostionIndex = -1;
+        
         return true;
     }
     snipplesMode.isEnabled = false;
-    snipplesMode.hasContent = false;
+    snipplesMode.lastPostionIndex = -1;
     return false;
 }
 
