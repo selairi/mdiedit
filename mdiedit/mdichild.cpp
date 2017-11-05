@@ -93,8 +93,18 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
     }
     
     if(globalConfig->snipplesActivateOk && snipples!=NULL && e->key() == Qt::Key_Tab && e->modifiers() == Qt::NoModifier &&  ! textCursor().hasSelection()) {
-        if( ! snipplesMode.isEnabled ) {
-            QTextCursor cursor = textCursor();
+        QTextCursor cursor = textCursor();
+        if( ! snipplesMode.isEnabled || 
+                (
+                    snipplesMode.isEnabled && snipplesMode.cursorStartSnipple < snipplesMode.cursorEndSnipple &&
+                    (snipplesMode.cursorStartSnipple > cursor || snipplesMode.cursorEndSnipple < cursor) 
+                )
+            ) {
+            if(snipplesMode.isEnabled) {
+                snipplesMode.isEnabled = false;
+                for(int i=0;i<10;i++)
+                    snipplesMode.cursorMarks[i].clear();
+            }
             QTextCursor cursorOriginal = textCursor();
             cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
             QString text = cursor.selectedText();
@@ -107,7 +117,6 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
                return;
             }
         } else {
-            QTextCursor cursor = textCursor();
             if(! execNextSnipple(cursor))
                 insertSpacesAsTab(cursor);
             return;
@@ -512,7 +521,10 @@ void MdiChild::enableSnipplesMode(QString snippleText, QTextCursor cursor)
     QRegularExpression re("\\$(?<position>[0-9])");
     QRegularExpressionMatch match;
     int index;
+    snipplesMode.cursorStartSnipple = cursor;
+    snipplesMode.cursorEndSnipple = cursor;
     insertPlainText(snippleText);
+    snipplesMode.cursorStartSnipple.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, snippleText.size());
     snipplesMode.isEnabled = false;
     for(index = 0; index < 10; index++)
         snipplesMode.cursorMarks[index].clear();

@@ -120,6 +120,7 @@ private:
         bool isEnabled;
         int lastPostionIndex;
         QTextCursor cursorStartContent, cursorEndContent;
+        QTextCursor cursorStartSnipple, cursorEndSnipple;
     } snipplesMode;
     void enableSnipplesMode(QString snippleText, QTextCursor cursor);
     bool execNextSnipple(QTextCursor cursor);
