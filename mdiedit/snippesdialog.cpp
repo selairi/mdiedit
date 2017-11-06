@@ -36,14 +36,14 @@
 **
 ****************************************************************************/
 
-#include "snipplesdialog.h"
+#include "snippesdialog.h"
 #include <QSettings>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QDebug>
 
-SnipplesDialog::SnipplesDialog(QHash<QString,QString> *snipples, bool activate, QWidget * parent):QDialog(parent) 
+SnippesDialog::SnippesDialog(QHash<QString,QString> *snippes, bool activate, QWidget * parent):QDialog(parent) 
 {
 	ui.setupUi(this);
 	connect(ui.addPushButton, SIGNAL(clicked()), this, SLOT(add()));
@@ -51,15 +51,15 @@ SnipplesDialog::SnipplesDialog(QHash<QString,QString> *snipples, bool activate, 
 	connect(ui.openPushButton, SIGNAL(clicked()), this, SLOT(open()));
 	connect(ui.savePushButton, SIGNAL(clicked()), this, SLOT(save()));
 	connect(ui.plainTextEdit, SIGNAL(textChanged()), this, SLOT(textChanged()));
-	if(snipples!=NULL) {
-		QHash<QString, QString>::const_iterator i = snipples->constBegin();
-		while (i != snipples->constEnd()) {
+	if(snippes!=NULL) {
+		QHash<QString, QString>::const_iterator i = snippes->constBegin();
+		while (i != snippes->constEnd()) {
 			new QListWidgetItem(i.key(), ui.listWidget);
-			this->snipples[i.key()] = i.value();
+			this->snippes[i.key()] = i.value();
 			++i;
 		}
 	}
-	ui.snipplesCheckBox->setChecked(activate);
+	ui.snippesCheckBox->setChecked(activate);
 	
 	connect(ui.listWidget, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), 
 		this, SLOT(changePage(QListWidgetItem*,QListWidgetItem*)));
@@ -67,34 +67,34 @@ SnipplesDialog::SnipplesDialog(QHash<QString,QString> *snipples, bool activate, 
 	ui.listWidget->setToolTip(tr("Add triggers here and their text.\nThe text will be written when writing the trigger and press the Tab key.\nExample:\nIf you create a trigger called 'h' with text 'Hello world',\nwhen you type 'h' and press the Tab key,\n'Hello world' will be written."));
 }
 
-void SnipplesDialog::changePage(QListWidgetItem*current,QListWidgetItem*previous)
+void SnippesDialog::changePage(QListWidgetItem*current,QListWidgetItem*previous)
 {
 	if(previous!=NULL)
-		snipples[previous->text()]=ui.plainTextEdit->toPlainText();
+		snippes[previous->text()]=ui.plainTextEdit->toPlainText();
 	if(current!=NULL)
-		ui.plainTextEdit->setPlainText(snipples[current->text()]);
+		ui.plainTextEdit->setPlainText(snippes[current->text()]);
 }
 
-void SnipplesDialog::textChanged()
+void SnippesDialog::textChanged()
 {
 	QListWidgetItem *item=ui.listWidget->currentItem();
 	if(item!=NULL) {
-		snipples[item->text()]=ui.plainTextEdit->toPlainText();
+		snippes[item->text()]=ui.plainTextEdit->toPlainText();
 	}
 }
 
-void SnipplesDialog::add()
+void SnippesDialog::add()
 {
 	bool ok;
 	QString text = QInputDialog::getText(this, tr("Trigger"), tr("Name:"), QLineEdit::Normal, QString(), &ok);
 	if (ok && !text.isEmpty()) {
-		snipples[text]="";
+		snippes[text]="";
 		QListWidgetItem *item = new QListWidgetItem(text, ui.listWidget);
 		ui.listWidget->setCurrentItem(item);
 	}
 }
 
-void SnipplesDialog::remove()
+void SnippesDialog::remove()
 {
 	ui.plainTextEdit->setPlainText("");
 	QListWidgetItem *item=ui.listWidget->currentItem();
@@ -104,7 +104,7 @@ void SnipplesDialog::remove()
 	}
 }
 
-void SnipplesDialog::open()
+void SnippesDialog::open()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open"));
 	if(fileName.isEmpty())
@@ -125,12 +125,12 @@ void SnipplesDialog::open()
 	QSettings settings(fileName, QSettings::IniFormat);
 	QStringList keys = settings.childKeys();
 	foreach(QString key, keys) {
-		snipples[key]=settings.value(key).toString();
+		snippes[key]=settings.value(key).toString();
 		new QListWidgetItem(key, ui.listWidget);
 	}
 }
 
-void SnipplesDialog::save()
+void SnippesDialog::save()
 {
 	QString fileName = QFileDialog::getSaveFileName(this, tr("Save"));
 	if(fileName.isEmpty())
@@ -140,16 +140,16 @@ void SnipplesDialog::save()
 	foreach(QString key, keys) {
 		settings.remove(key);
 	}
-	QHash<QString, QString>::const_iterator i = snipples.constBegin();
-	while (i != snipples.constEnd()) {
+	QHash<QString, QString>::const_iterator i = snippes.constBegin();
+	while (i != snippes.constEnd()) {
 		settings.setValue(i.key(), i.value());
 		++i;
 	}
 }
 
-bool SnipplesDialog::getActivateSnipples()
+bool SnippesDialog::getActivateSnippes()
 {
-	return ui.snipplesCheckBox->isChecked();
+	return ui.snippesCheckBox->isChecked();
 }
 
 

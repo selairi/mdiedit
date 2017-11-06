@@ -71,7 +71,7 @@ public:
     void setWindowModified(bool modifiedOk);
     inline SyntaxHighlighter *getSyntaxHightlighter() {return syntaxHightlighter;};
 
-    QHash<QString,QString> *snipples;
+    QHash<QString,QString> *snippes;
     GlobalConfig *globalConfig;
 
 signals:
@@ -115,15 +115,16 @@ private:
         int endLine;
     } blockModeData;
     
-    struct SnipplesMode {
+    struct SnippesMode {
         QList<QTextCursor> cursorMarks[10];
         bool isEnabled;
         int lastPostionIndex;
         QTextCursor cursorStartContent, cursorEndContent;
-        QTextCursor cursorStartSnipple, cursorEndSnipple;
-    } snipplesMode;
-    void enableSnipplesMode(QString snippleText, QTextCursor cursor);
-    bool execNextSnipple(QTextCursor cursor);
+        QTextCursor cursorStartSnippe, cursorEndSnippe;
+        void reset();
+    } snippesMode;
+    void enableSnippesMode(QString snippeText, QTextCursor cursor);
+    bool execNextSnippe(QTextCursor cursor);
 };
 
 class PlainTextDocumentLayout: public QPlainTextDocumentLayout

@@ -50,7 +50,7 @@
 
 #include "mainwindow.h"
 #include "mdichild.h"
-#include "snipplesdialog.h"
+#include "snippesdialog.h"
 #include "completiondialog.h"
 #include "ctagsbrowser.h"
 
@@ -418,14 +418,14 @@ void MainWindow::showFontDialog()
     }
 }
 
-void MainWindow::showSnipplesDialog()
+void MainWindow::showSnippesDialog()
 {
-    SnipplesDialog *dialog = new SnipplesDialog(&snipples, globalConfig->snipplesActivateOk, this);
+    SnippesDialog *dialog = new SnippesDialog(&snippes, globalConfig->snippesActivateOk, this);
     int ok = dialog->exec();
     if(QDialog::Rejected==ok)
         return;
-    snipples = dialog->snipples;
-    globalConfig->snipplesActivateOk = dialog->getActivateSnipples();
+    snippes = dialog->snippes;
+    globalConfig->snippesActivateOk = dialog->getActivateSnippes();
     delete dialog;
 }
 
@@ -654,7 +654,7 @@ void MainWindow::updateWindowMenu()
 MdiChild *MainWindow::createMdiChild()
 {
     MdiChild *child = new MdiChild(globalConfig, mdiArea);
-    child->snipples = &snipples;
+    child->snippes = &snippes;
     child->globalConfig = globalConfig;
     mdiArea->addSubWindow(child);
 
@@ -744,8 +744,8 @@ void MainWindow::createActions()
     redoAct->setShortcuts(QKeySequence::Redo);
     connect(redoAct, SIGNAL(triggered()), this, SLOT(redo()));
     
-    snipplesAct = new QAction( tr("Text shortcuts"), this);
-    connect(snipplesAct, SIGNAL(triggered()), this, SLOT(showSnipplesDialog()));
+    snippesAct = new QAction( tr("Text shortcuts"), this);
+    connect(snippesAct, SIGNAL(triggered()), this, SLOT(showSnippesDialog()));
     
     replaceTabsBySpacesAct = new QAction( tr("Replace tabs by spaces"), this);
     replaceTabsBySpacesAct->setCheckable(true);
@@ -911,7 +911,7 @@ void MainWindow::createMenus()
     editMenu->addAction(findNextAct);
     editMenu->addAction(goToLineAct);
     editMenu->addSeparator();
-    editMenu->addAction(snipplesAct);
+    editMenu->addAction(snippesAct);
     editMenu->addAction(wordwrapAct);
     editMenu->addAction(fontAct);
     tabsMenu = editMenu->addMenu(tr("Tabs"));
@@ -998,15 +998,15 @@ void MainWindow::readSettings()
         int spaces = i==0?1:i*2;
         tabsSpacesAct[i]->setChecked(spaces == globalConfig->tabsSpacesSize);
     }
-    globalConfig->snipplesActivateOk = settings.value("snipplesActivateOk", false).toBool();
+    globalConfig->snippesActivateOk = settings.value("snippesActivateOk", false).toBool();
     globalConfig->setSyntaxHighlight(settings.value("syntaxHighlightOk", true).toBool());
     syntaxHighlightAct->setChecked(globalConfig->isSyntaxHighlight());
     globalConfig->setHighlightParenthesisMatch(settings.value("highlightParenthesisMatch", true).toBool());
     highlightParenthesisMatchAct->setChecked(globalConfig->isHighlightParenthesisMatch());
-    settings.beginGroup("snipples");
+    settings.beginGroup("snippes");
     QStringList keys = settings.childKeys();
      foreach(QString key, keys) {
-         snipples[key]=settings.value(key).toString();
+         snippes[key]=settings.value(key).toString();
     }
     settings.endGroup();
 }
@@ -1025,12 +1025,12 @@ void MainWindow::writeSettings()
     settings.endGroup();
     settings.setValue("replaceTabsBySpacesOk", globalConfig->replaceTabsBySpacesOk);
     settings.setValue("tabsSpacesSize", globalConfig->tabsSpacesSize);
-    settings.setValue("snipplesActivateOk", globalConfig->snipplesActivateOk);
+    settings.setValue("snippesActivateOk", globalConfig->snippesActivateOk);
     settings.setValue("syntaxHighlightOk", globalConfig->isSyntaxHighlight());
     settings.setValue("highlightParenthesisMatch", globalConfig->isHighlightParenthesisMatch());
-    settings.beginGroup("snipples");
-    QHash<QString, QString>::const_iterator i = snipples.constBegin();
-    while (i != snipples.constEnd()) {
+    settings.beginGroup("snippes");
+    QHash<QString, QString>::const_iterator i = snippes.constBegin();
+    while (i != snippes.constEnd()) {
         settings.setValue(i.key(), i.value());
         ++i;
     }

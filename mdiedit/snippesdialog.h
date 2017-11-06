@@ -36,22 +36,22 @@
 **
 ****************************************************************************/
 
-#ifndef SNIPPLESDIALOG_H
-#define SNIPPLESDIALOG_H
+#ifndef SnippeSDIALOG_H
+#define SnippeSDIALOG_H
 
 #include <QDialog>
 #include <QTextDocument>
 #include <QHash>
 
-#include "ui_snipples.h"
+#include "ui_snippes.h"
 
-class SnipplesDialog : public QDialog {
+class SnippesDialog : public QDialog {
     Q_OBJECT
 
 public:
-    SnipplesDialog(QHash<QString,QString> *snipples, bool activate, QWidget * parent = 0);
-    QHash<QString,QString> snipples;
-    bool getActivateSnipples();
+    SnippesDialog(QHash<QString,QString> *snippes, bool activate, QWidget * parent = 0);
+    QHash<QString,QString> snippes;
+    bool getActivateSnippes();
 
 private slots:
     void add();
@@ -62,7 +62,7 @@ private slots:
     void textChanged();
 
 private:
-    Ui::Snipples ui;
+    Ui::Snippes ui;
 };
 
 #endif

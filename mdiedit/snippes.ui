@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Snipples</class>
- <widget class="QDialog" name="Snipples">
+ <class>Snippes</class>
+ <widget class="QDialog" name="Snippes">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -88,7 +88,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QCheckBox" name="snipplesCheckBox">
+      <widget class="QCheckBox" name="snippesCheckBox">
        <property name="text">
         <string>Enable text shortcuts</string>
        </property>
@@ -116,7 +116,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>Snipples</receiver>
+   <receiver>Snippes</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -132,7 +132,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>Snipples</receiver>
+   <receiver>Snippes</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

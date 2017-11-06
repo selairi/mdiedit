@@ -50,8 +50,8 @@ class GlobalConfig : public QObject
 public:
     GlobalConfig(QObject *parent);
 
-    QHash<QString,QString> snipples;
-    bool snipplesActivateOk;
+    QHash<QString,QString> snippes;
+    bool snippesActivateOk;
     bool replaceTabsBySpacesOk;
     int tabsSpacesSize;
     bool autoindent;

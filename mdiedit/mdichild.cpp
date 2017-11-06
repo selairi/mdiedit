@@ -61,9 +61,9 @@ MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(p
 	setWindowIcon(QIcon::fromTheme("text-x-generic"));
 	isUntitled = true;
 	autoindent = true;
-	snipples = NULL;
-	snipplesMode.isEnabled = false;
-	snipplesMode.lastPostionIndex = -1;
+	snippes = NULL;
+	snippesMode.isEnabled = false;
+	snippesMode.lastPostionIndex = -1;
 	this->globalConfig = globalConfig;
 	updateTabsSize();
 	setCursorWidth(3);
@@ -92,32 +92,30 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
         }
     }
     
-    if(globalConfig->snipplesActivateOk && snipples!=NULL && e->key() == Qt::Key_Tab && e->modifiers() == Qt::NoModifier &&  ! textCursor().hasSelection()) {
+    if(globalConfig->snippesActivateOk && snippes!=NULL && e->key() == Qt::Key_Tab && e->modifiers() == Qt::NoModifier &&  ! textCursor().hasSelection()) {
         QTextCursor cursor = textCursor();
-        if( ! snipplesMode.isEnabled || 
+        if( ! snippesMode.isEnabled || 
                 (
-                    snipplesMode.isEnabled && snipplesMode.cursorStartSnipple < snipplesMode.cursorEndSnipple &&
-                    (snipplesMode.cursorStartSnipple > cursor || snipplesMode.cursorEndSnipple < cursor) 
+                    snippesMode.isEnabled && snippesMode.cursorStartSnippe < snippesMode.cursorEndSnippe &&
+                    (snippesMode.cursorStartSnippe > cursor || snippesMode.cursorEndSnippe < cursor) 
                 )
             ) {
-            if(snipplesMode.isEnabled) {
-                snipplesMode.isEnabled = false;
-                for(int i=0;i<10;i++)
-                    snipplesMode.cursorMarks[i].clear();
+            if(snippesMode.isEnabled) {
+                snippesMode.reset();
             }
             QTextCursor cursorOriginal = textCursor();
             cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
             QString text = cursor.selectedText();
-            if(snipples->contains(text)) {
+            if(snippes->contains(text)) {
                setTextCursor(cursor);
-               enableSnipplesMode(snipples->value(text), cursor);
+               enableSnippesMode(snippes->value(text), cursor);
                return;
             } else if(globalConfig->replaceTabsBySpacesOk) {
                insertSpacesAsTab(cursorOriginal);
                return;
             }
         } else {
-            if(! execNextSnipple(cursor))
+            if(! execNextSnippe(cursor))
                 insertSpacesAsTab(cursor);
             return;
         }
@@ -516,21 +514,19 @@ void MdiChild::matchParenthesisPair()
             textCursor().positionInBlock());
 }
 
-void MdiChild::enableSnipplesMode(QString snippleText, QTextCursor cursor)
+void MdiChild::enableSnippesMode(QString snippeText, QTextCursor cursor)
 {
     QRegularExpression re("\\$(?<position>[0-9])");
     QRegularExpressionMatch match;
     int index;
-    snipplesMode.cursorStartSnipple = cursor;
-    snipplesMode.cursorEndSnipple = cursor;
-    insertPlainText(snippleText);
-    snipplesMode.cursorStartSnipple.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, snippleText.size()+1);
-    snipplesMode.cursorEndSnipple.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, 1);
-    snipplesMode.isEnabled = false;
-    for(index = 0; index < 10; index++)
-        snipplesMode.cursorMarks[index].clear();
+    snippesMode.reset();
+    snippesMode.cursorStartSnippe = cursor;
+    snippesMode.cursorEndSnippe = cursor;
+    insertPlainText(snippeText);
+    snippesMode.cursorStartSnippe.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, snippeText.size()+1);
+    snippesMode.cursorEndSnippe.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, 1);
     index = 0;
-    while( (match=re.match(snippleText, index)).hasMatch() ) {
+    while( (match=re.match(snippeText, index)).hasMatch() ) {
         index = match.capturedStart("position");
         if(index < 0)
             break;
@@ -539,61 +535,69 @@ void MdiChild::enableSnipplesMode(QString snippleText, QTextCursor cursor)
         if(! ok)
             continue;
         QTextCursor cursorMark = cursor;
-        cursorMark.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, snippleText.length() - index + 1);
-        snipplesMode.cursorMarks[position].append(cursorMark);
+        cursorMark.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, snippeText.length() - index + 1);
+        snippesMode.cursorMarks[position].append(cursorMark);
     }
-    if(! execNextSnipple(cursor))
+    if(! execNextSnippe(cursor))
         setTextCursor(cursor);
 }
 
-bool MdiChild::execNextSnipple(QTextCursor cursor)
+bool MdiChild::execNextSnippe(QTextCursor cursor)
 {
     for(int index = 0; index < 10; index++) {
         int i = (index+1)%10;
-        if(snipplesMode.cursorMarks[i].isEmpty())
+        if(snippesMode.cursorMarks[i].isEmpty())
             continue;
         // Jump to the next position
         QTextCursor cursorFirst, cursorMark;
-        cursorMark = cursorFirst = snipplesMode.cursorMarks[i].takeFirst();
+        cursorMark = cursorFirst = snippesMode.cursorMarks[i].takeFirst();
         cursorMark.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
         setTextCursor(cursorMark);
-        if(snipplesMode.lastPostionIndex == i) {
-            snipplesMode.cursorStartContent.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, 1);
-            int start = snipplesMode.cursorStartContent.position();
-            int end = snipplesMode.cursorEndContent.position();
-            snipplesMode.cursorStartContent.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, end-start);
-            QString text = snipplesMode.cursorStartContent.selectedText();
+        if(snippesMode.lastPostionIndex == i) {
+            snippesMode.cursorStartContent.movePosition(QTextCursor::Right, QTextCursor::MoveAnchor, 1);
+            int start = snippesMode.cursorStartContent.position();
+            int end = snippesMode.cursorEndContent.position();
+            snippesMode.cursorStartContent.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, end-start);
+            QString text = snippesMode.cursorStartContent.selectedText();
             insertPlainText(text);
-            while(! snipplesMode.cursorMarks[i].isEmpty()) {
+            while(! snippesMode.cursorMarks[i].isEmpty()) {
                 // Copy the contents of last position
-                cursorMark = snipplesMode.cursorMarks[i].takeFirst();
+                cursorMark = snippesMode.cursorMarks[i].takeFirst();
                 cursorMark.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, 2);
                 setTextCursor(cursorMark);
                 insertPlainText(text);
             }
             continue;
         }
-        if(! snipplesMode.cursorMarks[i].isEmpty()) {
-            snipplesMode.cursorEndContent = cursorMark;
-            snipplesMode.cursorStartContent = cursorFirst;
-            snipplesMode.cursorStartContent.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, 1);
+        if(! snippesMode.cursorMarks[i].isEmpty()) {
+            snippesMode.cursorEndContent = cursorMark;
+            snippesMode.cursorStartContent = cursorFirst;
+            snippesMode.cursorStartContent.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, 1);
         }
         // Are more positions left?
-        snipplesMode.lastPostionIndex = i;
-        snipplesMode.isEnabled = false;
+        snippesMode.lastPostionIndex = i;
+        snippesMode.isEnabled = false;
         for(i=0; i<10; i++)
-            if(! snipplesMode.cursorMarks[i].isEmpty()) {
-                snipplesMode.isEnabled = true;
+            if(! snippesMode.cursorMarks[i].isEmpty()) {
+                snippesMode.isEnabled = true;
                 break;
             }
-        if(! snipplesMode.isEnabled)
-            snipplesMode.lastPostionIndex = -1;
+        if(! snippesMode.isEnabled)
+            snippesMode.lastPostionIndex = -1;
         
         return true;
     }
-    snipplesMode.isEnabled = false;
-    snipplesMode.lastPostionIndex = -1;
+    snippesMode.isEnabled = false;
+    snippesMode.lastPostionIndex = -1;
     return false;
+}
+
+void MdiChild::SnippesMode::reset()
+{
+    isEnabled = false;
+    lastPostionIndex = -1;
+    for(int index = 0; index < 10; index++)
+        cursorMarks[index].clear();
 }
 
 PlainTextDocumentLayout::PlainTextDocumentLayout(QTextDocument *parent):QPlainTextDocumentLayout(parent)

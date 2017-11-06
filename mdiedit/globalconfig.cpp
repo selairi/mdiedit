@@ -40,7 +40,7 @@
 
 GlobalConfig::GlobalConfig(QObject *parent):QObject(parent)
 {
-    snipplesActivateOk = replaceTabsBySpacesOk = false;
+    snippesActivateOk = replaceTabsBySpacesOk = false;
     syntaxHighlightOk = highlightParenthesisMatchOk = true;
     autoindent = true;
     tabsSpacesSize = 4;

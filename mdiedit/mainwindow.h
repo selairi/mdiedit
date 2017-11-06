@@ -97,7 +97,7 @@ private slots:
     void goToLine();
     void wordwrapMode(MdiChild *child = NULL);
     void showFontDialog();
-    void showSnipplesDialog();
+    void showSnippesDialog();
     void replaceTabsBySpaces();
     void syntaxHighlight();
     void highlightParenthesisMatch();
@@ -170,7 +170,7 @@ private:
     QAction *goToLineAct;
     QAction *wordwrapAct;
     QAction *fontAct;
-    QAction *snipplesAct;
+    QAction *snippesAct;
     QAction *replaceTabsBySpacesAct;
     QAction *syntaxHighlightAct;
     QAction *highlightParenthesisMatchAct;
@@ -205,7 +205,7 @@ private:
     
     DocumentList *documentListDockWidget;
     
-    QHash<QString,QString> snipples;
+    QHash<QString,QString> snippes;
 };
 
 #endif
