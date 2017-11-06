@@ -524,7 +524,8 @@ void MdiChild::enableSnipplesMode(QString snippleText, QTextCursor cursor)
     snipplesMode.cursorStartSnipple = cursor;
     snipplesMode.cursorEndSnipple = cursor;
     insertPlainText(snippleText);
-    snipplesMode.cursorStartSnipple.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, snippleText.size());
+    snipplesMode.cursorStartSnipple.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, snippleText.size()+1);
+    snipplesMode.cursorEndSnipple.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor, 1);
     snipplesMode.isEnabled = false;
     for(index = 0; index < 10; index++)
         snipplesMode.cursorMarks[index].clear();
