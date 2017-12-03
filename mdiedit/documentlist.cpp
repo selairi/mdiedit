@@ -69,6 +69,7 @@ DocumentList::DocumentList(GlobalConfig *globalConfig,  QMdiArea *mdiArea, QWidg
     treeWidget->setSortingEnabled(true);
     treeWidget->setColumnWidth(0, 200);
     connect(treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(focusMdiChild(QTreeWidgetItem*, int)));
+    //connect(treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), this, SLOT(focusMdiChild(QTreeWidgetItem*, int)));
     QBoxLayout *boxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
     layout->addLayout(boxLayout);
     tileModeCheckBox = new QCheckBox(tr("Tile on click"), container);
@@ -80,6 +81,27 @@ DocumentList::DocumentList(GlobalConfig *globalConfig,  QMdiArea *mdiArea, QWidg
     maxWindowsShownInTiledSpinBox->setValue(3);
     maxWindowsShownInTiledSpinBox->setEnabled(false);
     connect(tileModeCheckBox, SIGNAL(stateChanged(int)), this, SLOT(tileModeCheckBoxStateChanged(int)));
+    initPopupMenu();
+}
+
+void DocumentList::initPopupMenu()
+{
+    treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    popupMenu = new QMenu(this);
+    closeWindowAction = popupMenu->addAction(tr("Close"));
+    connect(treeWidget, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(popupMenuRequested(const QPoint &)));
+    connect(closeWindowAction, SIGNAL(triggered()), this, SLOT(closeWindow()));
+}
+
+void DocumentList::popupMenuRequested(const QPoint &pos)
+{
+    popupMenu->popup(treeWidget->mapToGlobal(pos));
+}
+
+void DocumentList::closeWindow()
+{
+    treeWidget->currentItem()->data(2, Qt::DisplayRole).value<MdiChild*>()->setFocus();
+    mdiArea->closeActiveSubWindow();
 }
 
 QTreeWidgetItem* DocumentList::findTreeNode(QString path, MdiChild *mdichild)

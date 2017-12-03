@@ -44,6 +44,7 @@
 #include <QCheckBox>
 #include <QSpinBox> 
 #include <QMdiArea>
+#include <QMenu>
 #include "globalconfig.h"
 #include "mdichild.h"
 
@@ -70,6 +71,14 @@ private:
     QSpinBox *maxWindowsShownInTiledSpinBox;
     QTreeWidgetItem* findTreeNode(QString path, MdiChild *mdichild);
     QTreeWidgetItem* findTreeNode(MdiChild *mdichild);
+    // Popup menu
+    QMenu *popupMenu;
+    void initPopupMenu();
+    QAction *closeWindowAction;
+
+private slots:
+    void popupMenuRequested(const QPoint &pos);
+    void closeWindow();
 };
 
 #endif
