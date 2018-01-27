@@ -40,6 +40,7 @@
 #define CTAGSBROWSER_H
 
 #include <QDialog>
+#include <QProcess>
 
 #include "ui_ctagsbrowser.h"
 
@@ -53,6 +54,7 @@ public:
 
 public slots:
     void itemDoubleClicked(QTreeWidgetItem *item, int column);
+    void ctagsProcessErrorOccurred(QProcess::ProcessError error);
     
 private:
     Ui::CTAGSBrowser ui;

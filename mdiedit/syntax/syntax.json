@@ -2,7 +2,7 @@
     {
         "title": "C++",
         "fileType": [
-            ".*\.(c|cpp|cxx|c\+\+|C|h|hpp|hxx|H|ii)$"
+            ".*\\.(c|cpp|cxx|c\+\+|C|h|hpp|hxx|H|ii)$"
         ],
         "words": [
             "\\b(for|if|while|do|else|case|default|switch)\\b"
@@ -38,7 +38,7 @@
     {
         "title": "JSON",
         "fileType": [
-            ".*\.json$"
+            ".*\\.json$"
         ],
         "words": [],
         "comments": [],
@@ -53,7 +53,7 @@
     {
         "title": "LATEX/TEX",
         "fileType": [
-            ".*\.tex$"
+            ".*\\.tex$"
         ],
         "words": [
             "\\\\\\w+"
@@ -74,7 +74,7 @@
     {
         "title": "XML",
         "fileType": [
-            ".*\.(xml|html|htm)$"
+            ".*\\.(xml|html|htm)$"
         ],
         "words": [
             "&[^;[:space:]]*;"
@@ -111,7 +111,7 @@
     {
         "title": "Python",
         "fileType": [
-            ".*\.py$"
+            ".*\\.py$"
         ],
         "words": [
             "\\b(and|as|assert|break|class|continue|def|del|elif|else|except|exec|finally|for|from)\\b"
@@ -135,7 +135,7 @@
     {
         "title": "Javascript",
         "fileType": [
-            ".*\.(js)$"
+            ".*\\.(js)$"
         ],
         "words": [
             "\\b(const|function|let|this|typeof|var|void|for|if|while|with|do|else|case|default|switch|export|try|throw|catch|new|delete|continue|break|return|yield)\\b"

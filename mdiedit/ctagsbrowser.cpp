@@ -37,8 +37,7 @@
 ****************************************************************************/
 
 #include "ctagsbrowser.h"
-
-#include <QProcess>
+#include <QMessageBox>
 #include <QDebug>
 
 static QTreeWidgetItem *_parse_ctag_ouput(QTreeWidget *treeWidget, const char *buff);
@@ -48,6 +47,7 @@ CTAGSBrowser::CTAGSBrowser(QWidget * parent, QStringList files):QDialog(parent)
 	ui.setupUi(this);
     
     QProcess *ctags = new QProcess();
+    connect(ctags, &QProcess::errorOccurred, this, &CTAGSBrowser::ctagsProcessErrorOccurred);
     QString program("ctags");
     QStringList arguments;
     arguments << "-Rf" << "-" << "--fields=+n" << files;
@@ -75,6 +75,18 @@ CTAGSBrowser::CTAGSBrowser(QWidget * parent, QStringList files):QDialog(parent)
     ui.treeWidget->resizeColumnToContents(2);
     connect(ui.treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(itemDoubleClicked(QTreeWidgetItem *, int)));
 }
+
+void CTAGSBrowser::ctagsProcessErrorOccurred(QProcess::ProcessError error)
+{
+	/*
+	QMessageBox *errorMessage = new QMessageBox();
+	errorMessage->setText(tr("Ctags command can not be found. Please install ctags."));
+	errorMessage->exec();
+	delete errorMessage;
+	*/
+	QMessageBox::warning(nullptr, tr("Error"), tr("Ctags command can not be found. Please install ctags."));
+}
+    
 
 void CTAGSBrowser::itemDoubleClicked(QTreeWidgetItem *item, int column)
 {
