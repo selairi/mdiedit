@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-**   Copyright (C) 2017 P.L. Lucas
+**   Copyright (C) 2018 P.L. Lucas
 **
 **
 ** LICENSE: BSD
@@ -15,7 +15,7 @@
 **     notice, this list of conditions and the following disclaimer in
 **     the documentation and/or other materials provided with the
 **     distribution.
-**   * Neither the name of developers or companies in the above copyright, Digia Plc and its 
+**   * Neither the name of developers or companies in the above copyright and its 
 **     Subsidiary(-ies) nor the names of its contributors may be used to 
 **     endorse or promote products derived from this software without 
 **     specific prior written permission.
@@ -36,41 +36,35 @@
 **
 ****************************************************************************/
 
-#ifndef __GLOBAL_CONFIG_H__
-#define __GLOBAL_CONFIG_H__
-
+#ifndef SPELLCHECK_H
+#define SPELLCHECK_H
+#include <hunspell/hunspell.hxx>
 #include <QObject>
-#include <QHash>
-#include "spellchecktools.h"
 
-
-class GlobalConfig : public QObject
+class SpellCheck : public QObject
 {
-    Q_OBJECT
-
-public:
-    GlobalConfig(QObject *parent);
-
-    QHash<QString,QString> snippes;
-    bool snippesActivateOk;
-    bool replaceTabsBySpacesOk;
-    int tabsSpacesSize;
-    bool autoindent;
-    inline bool isSyntaxHighlight() {return syntaxHighlightOk;};
-    void setSyntaxHighlight(bool activatedOk);
-    inline bool isHighlightParenthesisMatch() {return highlightParenthesisMatchOk;};
-    void setHighlightParenthesisMatch(bool activatedOk);
-    SpellCheck *getSpellCheck();
-    void setSpellCheck(SpellCheck *spellChecker);
-    
-
-signals:
-    void syntaxHighlightChanged(bool activatedOk);
-
+Q_OBJECT
+public:    
+    SpellCheck(QObject *parent);
+    ~SpellCheck();
+    /**
+     * Check if word is misspelled.
+     * @return returns false is word is mispelled.
+     */
+    bool spell(const QString word);
+    const QStringList getLangs();
+    /** Set lang to use.
+     * @param lang Language to use. Example "us", "de", "es",...
+     * @return true if lang is available.
+     */
+    bool setLang(const QString & lang);
+    void setEnable(bool enable);
+    bool isEnabled();
+    inline const QStringList getDicts() {return langs;};
 private:
-    bool syntaxHighlightOk;
-    bool highlightParenthesisMatchOk;
-    SpellCheck *spellChecker;
+    Hunspell *spellChecker;
+    QStringList langs;
+    QString lang;
 };
 
 #endif

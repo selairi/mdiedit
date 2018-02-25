@@ -41,6 +41,7 @@
 #include <QTranslator>
 #include <QLibraryInfo>
 #include <QDebug>
+#include <stdlib.h> 
 #include "mainwindow.h"
 #include "config.h"
 
@@ -63,7 +64,18 @@ int main(int argn, char *argv[])
 	for(int i=1;i<argn;i++) {
 		fileList << argv[i];
 	}
+	
 	MainWindow mainWin;
+	// Init spell check
+	SpellCheck *spellChecker = new SpellCheck(&mainWin);
+	{
+	   char *lang = getenv("LANG");
+	   if(lang != nullptr) {
+	       spellChecker->setLang(lang);
+	       spellChecker->setEnable(true);
+	   }
+	}
+	mainWin.setSpellChecker(spellChecker);
 	mainWin.setWindowIcon(QIcon(ICON_PATH "/hicolor/scalable/apps/mdiedit.svg"));
 	mainWin.show();
 	QString file;

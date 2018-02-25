@@ -69,6 +69,8 @@ class MainWindow : public QMainWindow
 public:
     MainWindow();
     ~MainWindow();
+    
+    void setSpellChecker(SpellCheck *spellChecker);
 
 public slots:
     void open(QString fileName);
@@ -121,6 +123,7 @@ private slots:
     void showFileBrowser();
     void showCTAGSBrowser();
     void setSyntax(QString syntaxName);
+    void setSpellDict(int i);
 
 private:
     FindDialog *findDialog;
@@ -140,6 +143,8 @@ private:
     QMdiArea *mdiArea;
     QSignalMapper *windowMapper;
     QSignalMapper *actionsMapper;
+    
+    SpellCheck *spellChecker;
     
     QFont font;
 
@@ -183,6 +188,12 @@ private:
     
     QAction *showFileBrowserAct;
     QAction *ctagsBrowserAct;
+    QList<QAction*> spellCheckDictsAct;
+    QMenu *spellCheckMenu;
+    QAction *spellDictNoneAct;
+    QActionGroup *spellCheckDictsActGroup;
+    QSignalMapper *spellCheckMapper;
+    
     QMenu *popupMenu;
     
     QAction *newViewAct;

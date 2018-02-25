@@ -73,6 +73,8 @@ MainWindow::MainWindow()
     actionsMapper = new QSignalMapper(this);
     tabsGroupAct = new QActionGroup(this);
     syntaxGroupAct = new QActionGroup(this);
+    spellCheckDictsActGroup = new QActionGroup(this);
+    spellCheckMapper = new QSignalMapper(this);
     
     fileBrowserWidget = NULL;
 
@@ -822,6 +824,14 @@ void MainWindow::createActions()
     keysCTAGSBrowserAct << QKeySequence(Qt::Key_F6);
     ctagsBrowserAct->setShortcuts(keysCTAGSBrowserAct);
     connect(ctagsBrowserAct, SIGNAL(triggered()), this, SLOT(showCTAGSBrowser()));
+    
+    spellDictNoneAct = new QAction(tr("None"), this);
+    spellDictNoneAct->setCheckable(true);
+    spellCheckDictsActGroup->addAction(spellDictNoneAct);
+    connect(spellDictNoneAct, SIGNAL(changed()), spellCheckMapper, SLOT(map()));
+    spellCheckMapper->setMapping(spellDictNoneAct, 0);
+    connect(spellCheckMapper, SIGNAL(mapped(int)), this, SLOT(setSpellDict(int)));
+    spellCheckDictsAct.append(spellDictNoneAct);
 
     newViewAct = new QAction( tr("&New view"), this);
     connect(newViewAct, SIGNAL(triggered()), this, SLOT(newView()));
@@ -937,6 +947,10 @@ void MainWindow::createMenus()
     toolsMenu = menuBar()->addMenu(tr("&Tools"));
     toolsMenu->addAction(showFileBrowserAct);
     toolsMenu->addAction(ctagsBrowserAct);
+    spellCheckMenu = toolsMenu->addMenu(tr("Spell"));
+    for(int i=0; i<spellCheckDictsAct.size(); i++)
+        spellCheckMenu->addAction(spellCheckDictsAct[i]);
+    
 
     windowMenu = menuBar()->addMenu(tr("&Window"));
     updateWindowMenu();
@@ -1145,4 +1159,38 @@ void MainWindow::showCTAGSBrowser()
         }
     }
     delete browser;
+}
+
+void MainWindow::setSpellChecker(SpellCheck *spellChecker)
+{
+    globalConfig->setSpellCheck(spellChecker);
+    
+    // Update spell check menu
+    QStringList langs = spellChecker->getDicts();
+    for(int i=0; i<langs.size(); i++) {
+        QAction *spellDictAct = new QAction(langs[i], this);
+        spellDictAct->setCheckable(true);
+        spellCheckDictsActGroup->addAction(spellDictAct);
+        connect(spellDictAct, SIGNAL(changed()), spellCheckMapper, SLOT(map()));
+        spellCheckMapper->setMapping(spellDictAct, i+1);
+        spellCheckDictsAct.append(spellDictAct);
+    }
+    for(int i=1; i<spellCheckDictsAct.size(); i++)
+        spellCheckMenu->addAction(spellCheckDictsAct[i]);
+    //setSpellDict(0);
+    spellDictNoneAct->setChecked(true);
+}
+
+void MainWindow::setSpellDict(int i)
+{
+    SpellCheck *spellCheck = globalConfig->getSpellCheck();
+    if(spellCheck == nullptr)
+        return;
+    // If i==0, it is disabled
+    spellCheck->setEnable(i!=0);
+    spellCheck->setLang(spellCheckDictsAct[i]->text());
+    foreach (QMdiSubWindow *window, mdiArea->subWindowList()) {
+        MdiChild *mdiChild = qobject_cast<MdiChild *>(window->widget());
+        mdiChild->getSyntaxHightlighter()->rehighlight();
+    }
 }

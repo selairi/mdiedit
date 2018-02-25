@@ -56,6 +56,10 @@ SyntaxHighlighter::SyntaxHighlighter(QObject *parent, const QPalette & palette, 
     wordsFormat.setFontWeight(QFont::Bold);
     commentsFormat.setForeground(QBrush(palette.color(QPalette::Disabled, QPalette::Highlight)));
     stringsFormat.setForeground(QBrush(palette.color(QPalette::Active, QPalette::Highlight)));
+    spellCheckFormat.setFontUnderline(true);
+    spellCheckFormat.setUnderlineColor(QColor("red"));
+    spellCheckFormat.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
+    spellCheckRegExp = QRegularExpression("(\\w+)");
     syntax = nullptr;
     parenthesis = QRegularExpression("[\\(\\)\\[\\]\\{\\}]");
     startParenthesisList = QString("({[");
@@ -435,6 +439,25 @@ void SyntaxHighlighter::hightlightTextInside(const QString & text, const SyntaxS
     }
 }
 
+void SyntaxHighlighter::spellCheck(const QString & text)
+{
+    QRegularExpressionMatchIterator i = spellCheckRegExp.globalMatch(text);
+    SpellCheck *spellChecker = globalConfig->getSpellCheck();
+    if( spellChecker == nullptr || !spellChecker->isEnabled())
+        return;
+    while (i.hasNext()) {
+        QRegularExpressionMatch match = i.next();
+        QString word = match.captured(1);
+        if( ! spellChecker->spell(word) ) {
+            // The word is not in hunspell dictionary
+            // Look for format
+            QTextCharFormat f = format(match.capturedStart());
+            f.merge(spellCheckFormat);
+            setFormat(match.capturedStart(), match.capturedLength(),f);
+        }
+    }
+}
+
 void SyntaxHighlighter::highlightBlock(const QString & text)
 {
     QList<Parenthesis> parenthesisList;
@@ -522,6 +545,10 @@ void SyntaxHighlighter::highlightBlock(const QString & text)
             }
         }
     }
+    
+    if(globalConfig->getSpellCheck() != nullptr && globalConfig->getSpellCheck()->isEnabled())
+        spellCheck(text);
+    
 }
 
 

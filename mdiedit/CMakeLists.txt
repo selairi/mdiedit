@@ -3,17 +3,17 @@ project(mdiedit)
 
 set(H_FILES
 	document.h  finddialog.h  mainwindow.h  mdichild.h snippesdialog.h textblockdata.h completiondialog.h 
-	syntaxhighlighter.h globalconfig.h filebrowser.h documentlist.h ctagsbrowser.h
+	syntaxhighlighter.h globalconfig.h filebrowser.h documentlist.h ctagsbrowser.h spellchecktools.h
 )
 
 set(MOC_FILES
 	document.h  finddialog.h  mainwindow.h  mdichild.h snippesdialog.h textblockdata.h completiondialog.h 
-	syntaxhighlighter.h globalconfig.h filebrowser.h documentlist.h ctagsbrowser.h
+	syntaxhighlighter.h globalconfig.h filebrowser.h documentlist.h ctagsbrowser.h spellchecktools.h
 )
 
 set(CPP_FILES
     document.cpp  finddialog.cpp  main.cpp  mainwindow.cpp  mdichild.cpp snippesdialog.cpp textblockdata.cpp completiondialog.cpp globalconfig.cpp filebrowser.cpp
-    syntaxhighlighter.cpp documentlist.cpp ctagsbrowser.cpp
+    syntaxhighlighter.cpp documentlist.cpp ctagsbrowser.cpp spellchecktools.cpp
 )
 
 
@@ -84,11 +84,19 @@ else()
     set(QTX_LIBRARIES ${QT_LIBRARIES})
 endif()
 
+FIND_PATH(HUNSPELL_INCLUDE_DIR hunspell/hunspell.h
+    HINTS ${HUNSPELL_DIR} $ENV{HUNSPELL_DIR}
+    PATH_SUFFIXES include
+    PATHS /usr/local /usr
+)
+find_library(HUNSPELL_LIBRARIES NAMES hunspell libhunspell)
+
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
     ${QT_QTCORE_INCLUDE_DIR} ${QT_QTGUI_INCLUDE_DIR} ${QT_INCLUDE_DIR}
+    ${HUNSPELL_INCLUDE_DIR}
     ${LXQT_INCLUDE_DIR}
 )
 
@@ -120,7 +128,7 @@ add_executable(${PROJECT_NAME}
     ${MOC_SOURCES}
 )
 #add_dependencies(${PROJECT_NAME} ${LXQT_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} ${QTX_LIBRARIES} ${LXQT_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${QTX_LIBRARIES} ${HUNSPELL_LIBRARIES} ${LXQT_LIBRARIES})
 if(USE_QT4)
 target_link_libraries(${PROJECT_NAME} Qt4::QtGui Qt4::QtXml)
 endif()

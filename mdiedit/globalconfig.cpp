@@ -44,6 +44,7 @@ GlobalConfig::GlobalConfig(QObject *parent):QObject(parent)
     syntaxHighlightOk = highlightParenthesisMatchOk = true;
     autoindent = true;
     tabsSpacesSize = 4;
+    spellChecker = nullptr;
 }
 
 void GlobalConfig::setSyntaxHighlight(bool activatedOk)
@@ -55,4 +56,14 @@ void GlobalConfig::setSyntaxHighlight(bool activatedOk)
 void GlobalConfig::setHighlightParenthesisMatch(bool activatedOk)
 {
     highlightParenthesisMatchOk = activatedOk;
+}
+
+SpellCheck *GlobalConfig::getSpellCheck()
+{
+    return spellChecker;
+}
+
+void GlobalConfig::setSpellCheck(SpellCheck *spellChecker)
+{
+    this->spellChecker = spellChecker;
 }

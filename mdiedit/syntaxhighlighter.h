@@ -80,11 +80,14 @@ private:
         const QList<SyntaxStartEnd> & regList, int &state, int offset, FormatToApply *formatToApply);
     void hightlightTextInside(const QString & text, const SyntaxStartEnd & syntaxInside, 
         int offset, int final);
+    
+    void spellCheck(const QString & text);
 
     QTextCharFormat tabPositionFormat;
     QTextCharFormat wordsFormat;
     QTextCharFormat commentsFormat;
     QTextCharFormat stringsFormat;
+    QTextCharFormat spellCheckFormat;
     static QList<Syntax*> syntaxList;
     Syntax *syntax;
     
@@ -93,6 +96,8 @@ private:
     QTextBlock startParenthesisBlock, endParenthesisBlock;
     Parenthesis startParenthesis, endParenthesis;
     static QHash<QChar,QChar> parenthesisPair;
+    
+    QRegularExpression spellCheckRegExp;
 };
 
 struct SyntaxStartEnd
