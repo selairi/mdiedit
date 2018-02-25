@@ -810,6 +810,7 @@ void MainWindow::createActions()
     completionAct = new QAction( tr("Completer"), this);
     QList<QKeySequence> keysCompletionAct;
     keysCompletionAct << QKeySequence(Qt::Key_F2);
+    keysCompletionAct << QKeySequence(Qt::CTRL+Qt::Key_Space);
     completionAct->setShortcuts(keysCompletionAct);
     connect(completionAct, SIGNAL(triggered()), this, SLOT(completion()));
     
