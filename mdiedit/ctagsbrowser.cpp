@@ -74,17 +74,24 @@ CTAGSBrowser::CTAGSBrowser(QWidget * parent, QStringList files):QDialog(parent)
     ui.treeWidget->resizeColumnToContents(1);
     ui.treeWidget->resizeColumnToContents(2);
     connect(ui.treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(itemDoubleClicked(QTreeWidgetItem *, int)));
+    connect(ui.findLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(lineEditTextChanged(const QString &)));
 }
 
 void CTAGSBrowser::ctagsProcessErrorOccurred(QProcess::ProcessError error)
 {
-	/*
-	QMessageBox *errorMessage = new QMessageBox();
-	errorMessage->setText(tr("Ctags command can not be found. Please install ctags."));
-	errorMessage->exec();
-	delete errorMessage;
-	*/
 	QMessageBox::warning(nullptr, tr("Error"), tr("Ctags command can not be found. Please install ctags."));
+}
+
+void CTAGSBrowser::lineEditTextChanged(const QString &text)
+{
+    QList<QTreeWidgetItem *> selectedItems = ui.treeWidget->findItems(text, Qt::MatchContains, 1);
+    QList<QTreeWidgetItem *> items = ui.treeWidget->findItems("*", Qt::MatchWildcard, 1);
+    for(QTreeWidgetItem *item : items) {
+        if(selectedItems.contains(item))
+            item->setHidden(false);
+        else
+            item->setHidden(true);
+    }
 }
     
 

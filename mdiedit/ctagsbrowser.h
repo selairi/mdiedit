@@ -55,6 +55,7 @@ public:
 public slots:
     void itemDoubleClicked(QTreeWidgetItem *item, int column);
     void ctagsProcessErrorOccurred(QProcess::ProcessError error);
+    void lineEditTextChanged(const QString &text);
     
 private:
     Ui::CTAGSBrowser ui;
