@@ -70,7 +70,7 @@ SpellCheck::~SpellCheck()
 
 bool SpellCheck::spell(const QString word)
 {
-    return spellChecker == nullptr || spellChecker->spell(word.toStdString());
+    return spellChecker == nullptr || spellChecker->spell(word.toLatin1().toStdString());
 }
 
 const QStringList SpellCheck::getLangs()

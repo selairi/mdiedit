@@ -59,7 +59,7 @@ SyntaxHighlighter::SyntaxHighlighter(QObject *parent, const QPalette & palette, 
     spellCheckFormat.setFontUnderline(true);
     spellCheckFormat.setUnderlineColor(QColor("red"));
     spellCheckFormat.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
-    spellCheckRegExp = QRegularExpression("(\\w+)");
+    spellCheckRegExp = QRegularExpression("(\\w+)", QRegularExpression::UseUnicodePropertiesOption);
     syntax = nullptr;
     parenthesis = QRegularExpression("[\\(\\)\\[\\]\\{\\}]");
     startParenthesisList = QString("({[");
