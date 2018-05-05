@@ -50,6 +50,7 @@ static QString _getFirstPart(QString str, QString split)
 SpellCheck::SpellCheck(QObject *parent):QObject(parent)
 {
     spellChecker = nullptr;
+    codec = nullptr;
     if(langs.empty()) {
         // Look for available dicts
         QDir dicts("/usr/share/hunspell/");
@@ -70,7 +71,14 @@ SpellCheck::~SpellCheck()
 
 bool SpellCheck::spell(const QString word)
 {
-    return spellChecker == nullptr || spellChecker->spell(word.toLatin1().toStdString());
+    if(spellChecker == nullptr)
+        return true;
+    QByteArray w;
+    if(codec != nullptr)
+        w = codec->fromUnicode(word);
+    else
+        w = word.toLocal8Bit();
+    return spellChecker->spell(w.toStdString());
 }
 
 const QStringList SpellCheck::getLangs()
@@ -82,6 +90,7 @@ void SpellCheck::setEnable(bool enable)
 {
     if(enable && spellChecker == nullptr) {
         spellChecker = new Hunspell(QString("/usr/share/hunspell/"+lang+".aff").toLocal8Bit().data(), QString("/usr/share/hunspell/"+lang+".dic").toLocal8Bit().data());
+        codec = QTextCodec::codecForName(spellChecker->get_dict_encoding().c_str());
     } else {
         if(spellChecker != nullptr) {
             delete spellChecker;
