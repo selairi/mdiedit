@@ -90,6 +90,7 @@ private:
     QTextCharFormat spellCheckFormat;
     static QList<Syntax*> syntaxList;
     Syntax *syntax;
+    bool isSyntaxSetByUser;
     
     QRegularExpression parenthesis;
     QString startParenthesisList;

@@ -61,6 +61,7 @@ SyntaxHighlighter::SyntaxHighlighter(QObject *parent, const QPalette & palette, 
     spellCheckFormat.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
     spellCheckRegExp = QRegularExpression("(\\w+)", QRegularExpression::UseUnicodePropertiesOption);
     syntax = nullptr;
+    isSyntaxSetByUser = false;
     parenthesis = QRegularExpression("[\\(\\)\\[\\]\\{\\}]");
     startParenthesisList = QString("({[");
     if(parenthesisPair.isEmpty()) {
@@ -183,6 +184,8 @@ Syntax *SyntaxHighlighter::matchSyntaxToFileName(QString fileName, QList<Syntax*
 
 void SyntaxHighlighter::setFileName(QString fileName)
 {
+    if(isSyntaxSetByUser)
+        return;
     if(syntax != nullptr)
         syntax->referenceCount--;
     syntax = matchSyntaxToFileName(fileName, syntaxList);
@@ -253,6 +256,7 @@ void SyntaxHighlighter::setSyntax(QString syntaxName)
             break;
         }
     }
+    isSyntaxSetByUser = true;
     rehighlight();
 }
 
