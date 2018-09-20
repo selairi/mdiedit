@@ -483,9 +483,11 @@ void SyntaxHighlighter::highlightBlock(const QString & text)
             formatToApply.state = BlockState::None;
             formatToApply.syntaxInsideOk = false;
             int state = BlockState::Other;
-            hightlightText(text, wordsFormat, syntax->words, offset, &formatToApply);
-            hightlightText(text, stringsFormat, syntax->strings, offset, &formatToApply);
-            hightlightText(text, commentsFormat, syntax->comments, offset, &formatToApply);
+            if(offset > 0 || previousBlockState() == BlockState::None) {
+                hightlightText(text, wordsFormat, syntax->words, offset, &formatToApply);
+                hightlightText(text, stringsFormat, syntax->strings, offset, &formatToApply);
+                hightlightText(text, commentsFormat, syntax->comments, offset, &formatToApply);
+            }
             setCurrentBlockState(BlockState::None);
             hightlightText(text, wordsFormat, syntax->wordsBlock, state, offset, &formatToApply);
             hightlightText(text, stringsFormat, syntax->stringsBlock, state, offset, &formatToApply);
