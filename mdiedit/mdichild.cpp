@@ -249,6 +249,7 @@ bool MdiChild::loadFile(const QString &fileName)
 
     blockMode(false);
     QTextStream in(&file);
+    in.setCodec(globalConfig->getEncoding().toLatin1().constData());
     QApplication::setOverrideCursor(Qt::WaitCursor);
     setPlainText(in.readAll());
     QApplication::restoreOverrideCursor();
@@ -289,6 +290,7 @@ bool MdiChild::saveFile(const QString &fileName)
     }
 
     QTextStream out(&file);
+    out.setCodec(globalConfig->getEncoding().toLatin1().constData());
     QApplication::setOverrideCursor(Qt::WaitCursor);
     out << toPlainText();
     QApplication::restoreOverrideCursor();

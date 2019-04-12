@@ -124,6 +124,7 @@ private slots:
     void showCTAGSBrowser();
     void setSyntax(QString syntaxName);
     void setSpellDict(int i);
+    void selectEncoding();
 
 private:
     FindDialog *findDialog;
@@ -183,6 +184,7 @@ private:
     QActionGroup *syntaxGroupAct;
     QMenu *tabsMenu;
     QMenu *syntaxHighlightMenu;
+    QAction *encodingsAct;
     QAction **tabsSpacesAct; // Pointer to array of N_TABS_SPACES elements
     QActionGroup *tabsGroupAct;
     
@@ -210,6 +212,7 @@ private:
     QAction *aboutQtAct;
     
     QLabel *lineNumberLabel;
+    QLabel *encodingLabel;
     QDockWidget *fileBrowserDockWidget;
     FileBrowser *fileBrowserWidget;
     QString fileBrowserPath;

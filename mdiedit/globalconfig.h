@@ -62,6 +62,8 @@ public:
     void setHighlightParenthesisMatch(bool activatedOk);
     SpellCheck *getSpellCheck();
     void setSpellCheck(SpellCheck *spellChecker);
+    QString getEncoding();
+    void setEncoding(QString encoding);
     
 
 signals:
@@ -71,6 +73,7 @@ private:
     bool syntaxHighlightOk;
     bool highlightParenthesisMatchOk;
     SpellCheck *spellChecker;
+    QString encoding;
 };
 
 #endif

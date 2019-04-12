@@ -577,7 +577,7 @@ void MainWindow::about()
 {
    QMessageBox::about(this, tr("About MDI Edit"),
             tr("Simple text editor based in the Qt MDI example.\n\n"
-                "Copyright (C) 2017 P.L. Lucas\n"
+                "Copyright (C) 2019 P.L. Lucas\n"
                 "License: 3-clause BSD"
             ));
 }
@@ -766,6 +766,11 @@ void MainWindow::createActions()
         actionsMapper->setMapping(tabsSpacesAct[i], spaces);
     }
     connect(actionsMapper, SIGNAL(mapped(int)), this, SLOT(setTabsSize(int)));
+    
+    // Lists available encodings
+    
+    encodingsAct = new QAction( tr("Encoding"), this);
+    connect(encodingsAct, SIGNAL(triggered()), this, SLOT(selectEncoding()));
 
     syntaxHighlightAct = new QAction( tr("Syntax highlight"), this);
     syntaxHighlightAct->setCheckable(true);
@@ -930,6 +935,7 @@ void MainWindow::createMenus()
     for(int i=0; i<N_TABS_SPACES; i++) {
         tabsMenu->addAction(tabsSpacesAct[i]);
     }
+    editMenu->addAction(encodingsAct);
     syntaxHighlightMenu = editMenu->addMenu(tr("Syntax"));
     syntaxHighlightMenu->addAction(syntaxHighlightAct);
     syntaxHighlightMenu->addAction(highlightParenthesisMatchAct);
@@ -986,6 +992,9 @@ void MainWindow::createStatusBar()
     lineNumberLabel = new QLabel(this);
     lineNumberLabel->setTextFormat(Qt::PlainText);
     statusBar()->addPermanentWidget(lineNumberLabel);
+    encodingLabel = new QLabel(this);
+    encodingLabel->setTextFormat(Qt::PlainText);
+    statusBar()->addPermanentWidget(encodingLabel);
 }
 
 void MainWindow::readSettings()
@@ -1018,6 +1027,8 @@ void MainWindow::readSettings()
     syntaxHighlightAct->setChecked(globalConfig->isSyntaxHighlight());
     globalConfig->setHighlightParenthesisMatch(settings.value("highlightParenthesisMatch", true).toBool());
     highlightParenthesisMatchAct->setChecked(globalConfig->isHighlightParenthesisMatch());
+    globalConfig->setEncoding(settings.value("encoding").toString());
+    encodingLabel->setText(globalConfig->getEncoding());
     settings.beginGroup("snippes");
     QStringList keys = settings.childKeys();
      foreach(QString key, keys) {
@@ -1043,6 +1054,7 @@ void MainWindow::writeSettings()
     settings.setValue("snippesActivateOk", globalConfig->snippesActivateOk);
     settings.setValue("syntaxHighlightOk", globalConfig->isSyntaxHighlight());
     settings.setValue("highlightParenthesisMatch", globalConfig->isHighlightParenthesisMatch());
+    settings.setValue("encoding", globalConfig->getEncoding());
     settings.beginGroup("snippes");
     QHash<QString, QString>::const_iterator i = snippes.constBegin();
     while (i != snippes.constEnd()) {
@@ -1193,5 +1205,30 @@ void MainWindow::setSpellDict(int i)
     foreach (QMdiSubWindow *window, mdiArea->subWindowList()) {
         MdiChild *mdiChild = qobject_cast<MdiChild *>(window->widget());
         mdiChild->getSyntaxHightlighter()->rehighlight();
+    }
+}
+
+void MainWindow::selectEncoding()
+{
+    QStringList codecs;
+    
+    QList<QByteArray> availableCodecs = QTextCodec::availableCodecs();
+    qSort(availableCodecs);
+    int selected = -1;
+    for(QByteArray codec : availableCodecs) {
+        QString codecStr(codec);
+        if( ! codecs.contains(codecStr) )
+            codecs.append(QString(codecStr));
+        
+        if(selected < 1 && codecStr == globalConfig->getEncoding())
+            selected = codecs.size() - 1;
+    }
+    
+    bool ok;
+    QString str = QInputDialog::getItem(this, tr("Select encoding"), tr("Select encoding"), codecs, selected, false, &ok);
+    
+    if (ok && ! str.isEmpty()) {
+        globalConfig->setEncoding(str);
+        encodingLabel->setText(globalConfig->getEncoding());
     }
 }

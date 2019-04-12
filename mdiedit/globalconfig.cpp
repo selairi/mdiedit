@@ -45,6 +45,7 @@ GlobalConfig::GlobalConfig(QObject *parent):QObject(parent)
     autoindent = true;
     tabsSpacesSize = 4;
     spellChecker = nullptr;
+    encoding = "UTF-8";
 }
 
 void GlobalConfig::setSyntaxHighlight(bool activatedOk)
@@ -66,4 +67,16 @@ SpellCheck *GlobalConfig::getSpellCheck()
 void GlobalConfig::setSpellCheck(SpellCheck *spellChecker)
 {
     this->spellChecker = spellChecker;
+}
+
+QString GlobalConfig::getEncoding()
+{
+    return this->encoding;
+}
+
+#include <QDebug>
+void GlobalConfig::setEncoding(QString encoding)
+{
+    if(! encoding.isEmpty())
+        this->encoding = encoding;
 }
