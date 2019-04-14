@@ -75,6 +75,8 @@ MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(p
 		this, SLOT(setCurrentFile(QString)));
 	connect(document(), SIGNAL(contentsChange(int, int, int)), this, SLOT(documentChanged(int, int, int)));
 	connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(matchParenthesisPair()));
+	
+	//setStyleSheet("color: white; background-color: black;");
 }
 
 void MdiChild::keyPressEvent(QKeyEvent * e)

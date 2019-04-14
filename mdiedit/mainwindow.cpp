@@ -992,9 +992,11 @@ void MainWindow::createStatusBar()
     lineNumberLabel = new QLabel(this);
     lineNumberLabel->setTextFormat(Qt::PlainText);
     statusBar()->addPermanentWidget(lineNumberLabel);
-    encodingLabel = new QLabel(this);
-    encodingLabel->setTextFormat(Qt::PlainText);
-    statusBar()->addPermanentWidget(encodingLabel);
+    encodingButton = new QPushButton(this);
+    encodingButton->setText("utf-8");
+    encodingButton->setFlat(true);
+    statusBar()->addPermanentWidget(encodingButton);
+    connect(encodingButton, SIGNAL(clicked()), this, SLOT(selectEncoding()));
 }
 
 void MainWindow::readSettings()
@@ -1028,7 +1030,7 @@ void MainWindow::readSettings()
     globalConfig->setHighlightParenthesisMatch(settings.value("highlightParenthesisMatch", true).toBool());
     highlightParenthesisMatchAct->setChecked(globalConfig->isHighlightParenthesisMatch());
     globalConfig->setEncoding(settings.value("encoding").toString());
-    encodingLabel->setText(globalConfig->getEncoding());
+    encodingButton->setText(globalConfig->getEncoding());
     settings.beginGroup("snippes");
     QStringList keys = settings.childKeys();
      foreach(QString key, keys) {
@@ -1229,6 +1231,6 @@ void MainWindow::selectEncoding()
     
     if (ok && ! str.isEmpty()) {
         globalConfig->setEncoding(str);
-        encodingLabel->setText(globalConfig->getEncoding());
+        encodingButton->setText(globalConfig->getEncoding());
     }
 }

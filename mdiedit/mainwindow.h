@@ -212,7 +212,7 @@ private:
     QAction *aboutQtAct;
     
     QLabel *lineNumberLabel;
-    QLabel *encodingLabel;
+    QPushButton *encodingButton;
     QDockWidget *fileBrowserDockWidget;
     FileBrowser *fileBrowserWidget;
     QString fileBrowserPath;
