@@ -74,9 +74,19 @@ QString GlobalConfig::getEncoding()
     return this->encoding;
 }
 
-#include <QDebug>
 void GlobalConfig::setEncoding(QString encoding)
 {
     if(! encoding.isEmpty())
         this->encoding = encoding;
+}
+
+
+QString GlobalConfig::getTextTheme()
+{
+    return this->textTheme;
+}
+
+void GlobalConfig::setTextTheme(QString textTheme)
+{
+    this->textTheme = textTheme;
 }

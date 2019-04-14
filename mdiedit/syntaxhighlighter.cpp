@@ -564,4 +564,13 @@ QList<Syntax*> SyntaxHighlighter::syntaxsList()
     return list;
 }
 
+void SyntaxHighlighter::updateTextTheme(TextTheme *theme)
+{
+    tabPositionFormat = theme->tabPosition;
+    wordsFormat = theme->words;
+    commentsFormat = theme->comments;
+    stringsFormat = theme->strings;
+    spellCheckFormat = theme->spellCheck;
+}
+
 

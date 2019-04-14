@@ -4,16 +4,19 @@ project(mdiedit)
 set(H_FILES
 	document.h  finddialog.h  mainwindow.h  mdichild.h snippesdialog.h textblockdata.h completiondialog.h 
 	syntaxhighlighter.h globalconfig.h filebrowser.h documentlist.h ctagsbrowser.h spellchecktools.h
+	textthemes.h
 )
 
 set(MOC_FILES
 	document.h  finddialog.h  mainwindow.h  mdichild.h snippesdialog.h textblockdata.h completiondialog.h 
 	syntaxhighlighter.h globalconfig.h filebrowser.h documentlist.h ctagsbrowser.h spellchecktools.h
+	textthemes.h
 )
 
 set(CPP_FILES
     document.cpp  finddialog.cpp  main.cpp  mainwindow.cpp  mdichild.cpp snippesdialog.cpp textblockdata.cpp completiondialog.cpp globalconfig.cpp filebrowser.cpp
     syntaxhighlighter.cpp documentlist.cpp ctagsbrowser.cpp spellchecktools.cpp
+    textthemes.cpp
 )
 
 

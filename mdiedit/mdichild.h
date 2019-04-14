@@ -83,6 +83,7 @@ signals:
 public slots:
     void setCurrentFile(QString fileName);
     void updateTabsSize();
+    void updateTextTheme();
 
 protected:
     void closeEvent(QCloseEvent *event);

@@ -53,6 +53,7 @@
 #include "snippesdialog.h"
 #include "completiondialog.h"
 #include "ctagsbrowser.h"
+#include "textthemes.h"
 
 MainWindow::MainWindow()
 {
@@ -73,6 +74,8 @@ MainWindow::MainWindow()
     actionsMapper = new QSignalMapper(this);
     tabsGroupAct = new QActionGroup(this);
     syntaxGroupAct = new QActionGroup(this);
+    textThemesMapper = new QSignalMapper(this);
+    textThemesGroupAct = new QActionGroup(this);
     spellCheckDictsActGroup = new QActionGroup(this);
     spellCheckMapper = new QSignalMapper(this);
     
@@ -795,6 +798,21 @@ void MainWindow::createActions()
         connect(actionsMapper, SIGNAL(mapped(QString)), this, SLOT(setSyntax(QString)));
     }
     
+    {
+        TextThemes themes;
+        QStringList list = themes.themeNames();
+        for(int i=0; i<list.size(); i++) {
+            QString themeName = list[i];
+            QAction *action = new QAction(themeName, this);
+            textThemesAct[themeName] = action;
+            action->setCheckable(true);
+            textThemesGroupAct->addAction(action);
+            connect(action, SIGNAL(changed()), textThemesMapper, SLOT(map()));
+            textThemesMapper->setMapping(action, themeName);
+        }
+        connect(textThemesMapper, SIGNAL(mapped(QString)), this, SLOT(setTextTheme(QString)));
+    }
+    
     wordwrapAct = new QAction( tr("&Wordwrap"), this);
     wordwrapAct->setCheckable(true);
     connect(wordwrapAct, SIGNAL(triggered()), this, SLOT(wordwrapMode()));
@@ -927,7 +945,6 @@ void MainWindow::createMenus()
     editMenu->addAction(findNextAct);
     editMenu->addAction(goToLineAct);
     editMenu->addSeparator();
-    editMenu->addAction(snippesAct);
     editMenu->addAction(wordwrapAct);
     editMenu->addAction(fontAct);
     tabsMenu = editMenu->addMenu(tr("Tabs"));
@@ -950,8 +967,14 @@ void MainWindow::createMenus()
             syntaxHighlightMenu->addAction(syntaxsAct[key]);
         }
     }
+    textThemesMenu = editMenu->addMenu(tr("Text Themes"));
+    {
+        for(QString key : textThemesAct.keys())
+            textThemesMenu->addAction(textThemesAct[key]);
+    }
     
     toolsMenu = menuBar()->addMenu(tr("&Tools"));
+    toolsMenu->addAction(snippesAct);
     toolsMenu->addAction(showFileBrowserAct);
     toolsMenu->addAction(ctagsBrowserAct);
     spellCheckMenu = toolsMenu->addMenu(tr("Spell"));
@@ -1232,5 +1255,15 @@ void MainWindow::selectEncoding()
     if (ok && ! str.isEmpty()) {
         globalConfig->setEncoding(str);
         encodingButton->setText(globalConfig->getEncoding());
+    }
+}
+
+void MainWindow::setTextTheme(QString themeName)
+{
+    globalConfig->setTextTheme(themeName);
+    foreach (QMdiSubWindow *window, mdiArea->subWindowList()) {
+        MdiChild *mdiChild = qobject_cast<MdiChild *>(window->widget());
+        mdiChild->updateTextTheme();
+        mdiChild->getSyntaxHightlighter()->rehighlight();
     }
 }

@@ -125,6 +125,7 @@ private slots:
     void setSyntax(QString syntaxName);
     void setSpellDict(int i);
     void selectEncoding();
+    void setTextTheme(QString themeName);
 
 private:
     FindDialog *findDialog;
@@ -185,6 +186,12 @@ private:
     QMenu *tabsMenu;
     QMenu *syntaxHighlightMenu;
     QAction *encodingsAct;
+    
+    QMenu *textThemesMenu;
+    QActionGroup *textThemesGroupAct;
+    QHash<QString,QAction* > textThemesAct;
+    QSignalMapper *textThemesMapper;
+    
     QAction **tabsSpacesAct; // Pointer to array of N_TABS_SPACES elements
     QActionGroup *tabsGroupAct;
     

@@ -45,6 +45,7 @@
 #include "globalconfig.h"
 #include "document.h"
 #include "textblockdata.h"
+#include "textthemes.h"
 
 struct Syntax;
 struct SyntaxStartEnd;
@@ -61,6 +62,7 @@ public:
     void setSyntax(QString syntaxName);
     inline Syntax* getSyntax() {return syntax;};
     static QList<Syntax*> syntaxsList(); 
+    void updateTextTheme(TextTheme *theme);
     
     GlobalConfig *globalConfig;
 

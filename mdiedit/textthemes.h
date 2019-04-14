@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-**   Copyright (C) 2017 P.L. Lucas
+**   Copyright (C) 2019 P.L. Lucas
 **
 **
 ** LICENSE: BSD
@@ -15,7 +15,7 @@
 **     notice, this list of conditions and the following disclaimer in
 **     the documentation and/or other materials provided with the
 **     distribution.
-**   * Neither the name of developers or companies in the above copyright, Digia Plc and its 
+**   * Neither the name of developers or companies in the above copyright and its 
 **     Subsidiary(-ies) nor the names of its contributors may be used to 
 **     endorse or promote products derived from this software without 
 **     specific prior written permission.
@@ -36,46 +36,33 @@
 **
 ****************************************************************************/
 
-#ifndef __GLOBAL_CONFIG_H__
-#define __GLOBAL_CONFIG_H__
+#ifndef TEXTTHEMES_H
+#define TEXTTHEMES_H
 
-#include <QObject>
-#include <QHash>
-#include "spellchecktools.h"
+#include <QColor>
+#include <QStringList>
+#include <QTextCharFormat>
+#include <QPalette>
 
-
-class GlobalConfig : public QObject
+struct TextTheme
 {
-    Q_OBJECT
+    QColor background;
+    QColor foreground;
+    QColor selectionForeground;
+    QColor selectionBackground;
+    QTextCharFormat tabPosition;
+    QTextCharFormat words;
+    QTextCharFormat comments;
+    QTextCharFormat strings;
+    QTextCharFormat spellCheck;
+};
 
+class TextThemes
+{
 public:
-    GlobalConfig(QObject *parent);
-
-    QHash<QString,QString> snippes;
-    bool snippesActivateOk;
-    bool replaceTabsBySpacesOk;
-    int tabsSpacesSize;
-    bool autoindent;
-    inline bool isSyntaxHighlight() {return syntaxHighlightOk;};
-    void setSyntaxHighlight(bool activatedOk);
-    inline bool isHighlightParenthesisMatch() {return highlightParenthesisMatchOk;};
-    void setHighlightParenthesisMatch(bool activatedOk);
-    SpellCheck *getSpellCheck();
-    void setSpellCheck(SpellCheck *spellChecker);
-    QString getEncoding();
-    void setEncoding(QString encoding);
-    QString getTextTheme();
-    void setTextTheme(QString textTheme);
-
-signals:
-    void syntaxHighlightChanged(bool activatedOk);
-
-private:
-    bool syntaxHighlightOk;
-    bool highlightParenthesisMatchOk;
-    SpellCheck *spellChecker;
-    QString encoding;
-    QString textTheme;
+    TextThemes();
+    QStringList themeNames();
+    TextTheme getTextTheme(QString name, QPalette defaultPalette);
 };
 
 #endif

@@ -45,8 +45,11 @@
 #include <QtGui>
 #endif
 
+#include <QPalette>
+
 #include "mdichild.h"
 #include "textblockdata.h"
+#include "textthemes.h"
 
 MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(parent)
 {
@@ -67,6 +70,7 @@ MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(p
 	this->globalConfig = globalConfig;
 	updateTabsSize();
 	setCursorWidth(3);
+	updateTextTheme();
 	connect(document(), SIGNAL(contentsChanged()),
 		this, SLOT(documentContentsChanged()));
 	connect(document(), SIGNAL(modificationChanged(bool)),
@@ -75,8 +79,6 @@ MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(p
 		this, SLOT(setCurrentFile(QString)));
 	connect(document(), SIGNAL(contentsChange(int, int, int)), this, SLOT(documentChanged(int, int, int)));
 	connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(matchParenthesisPair()));
-	
-	//setStyleSheet("color: white; background-color: black;");
 }
 
 void MdiChild::keyPressEvent(QKeyEvent * e)
@@ -602,6 +604,20 @@ void MdiChild::SnippesMode::reset()
     lastPostionIndex = -1;
     for(int index = 0; index < 10; index++)
         cursorMarks[index].clear();
+}
+
+void MdiChild::updateTextTheme()
+{
+    TextThemes themes;
+    TextTheme theme = themes.getTextTheme(globalConfig->getTextTheme(), QApplication::palette(this));
+    QPalette pPalette = palette();
+    pPalette.setColor(QPalette::Base, theme.background);
+    pPalette.setColor(QPalette::Text, theme.foreground);
+    pPalette.setColor(QPalette::HighlightedText, theme.selectionForeground);
+    pPalette.setColor(QPalette::Highlight, theme.selectionBackground);
+    setPalette(pPalette);
+    syntaxHightlighter->updateTextTheme(&theme);
+    
 }
 
 PlainTextDocumentLayout::PlainTextDocumentLayout(QTextDocument *parent):QPlainTextDocumentLayout(parent)
