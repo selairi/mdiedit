@@ -88,5 +88,7 @@ QString GlobalConfig::getTextTheme()
 
 void GlobalConfig::setTextTheme(QString textTheme)
 {
+    if(textTheme.isEmpty())
+        textTheme = "Default";
     this->textTheme = textTheme;
 }

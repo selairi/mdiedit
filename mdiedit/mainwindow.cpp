@@ -1057,10 +1057,12 @@ void MainWindow::readSettings()
     encodingButton->setText(globalConfig->getEncoding());
     settings.beginGroup("snippes");
     QStringList keys = settings.childKeys();
-     foreach(QString key, keys) {
+    for(QString key : keys) {
          snippes[key]=settings.value(key).toString();
     }
     settings.endGroup();
+    globalConfig->setTextTheme(settings.value("textTheme").toString());
+    textThemesAct[globalConfig->getTextTheme()]->setChecked(true);
 }
 
 void MainWindow::writeSettings()
@@ -1088,6 +1090,7 @@ void MainWindow::writeSettings()
         ++i;
     }
     settings.endGroup();
+    settings.setValue("textTheme", globalConfig->getTextTheme());
 }
 
 MdiChild *MainWindow::activeMdiChild()
