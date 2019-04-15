@@ -130,7 +130,7 @@ QList<Syntax*> SyntaxHighlighter::loadSyntaxFrom(QJsonDocument &json)
     QJsonArray arrayJson = json.array();
     for(QJsonValue arrayItem : arrayJson) {
         QJsonObject obj = arrayItem.toObject();
-        Syntax *s = new Syntax;;
+        Syntax *s = new Syntax;
         s->referenceCount = 0;
         s->title = obj.value("title").toString();
         s->fileType = jsonToList(obj.value("fileType").toArray());

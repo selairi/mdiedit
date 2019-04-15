@@ -969,7 +969,8 @@ void MainWindow::createMenus()
     }
     textThemesMenu = editMenu->addMenu(tr("Text Themes"));
     {
-        for(QString key : textThemesAct.keys())
+        TextThemes themes;
+        for(QString key : themes.themeNames())
             textThemesMenu->addAction(textThemesAct[key]);
     }
     

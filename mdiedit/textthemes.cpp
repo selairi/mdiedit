@@ -36,12 +36,18 @@
 **
 ****************************************************************************/
 
+#include <QFile>
+#include <QDebug>
+#include <QJsonArray>
+#include <QJsonObject>
 #include "textthemes.h"
+#include "config.h"
 
 TextThemes::TextThemes()
 {
 }
 
+/*
 QStringList TextThemes::themeNames()
 {
     QStringList themes;
@@ -80,5 +86,114 @@ TextTheme TextThemes::getTextTheme(QString name, QPalette defaultPalette)
         theme.spellCheck.setUnderlineColor(QColor("red"));
         theme.spellCheck.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
     }
+    return theme;
+}
+*/
+
+QStringList TextThemes::themeNames()
+{
+    QStringList themes;
+    themes = readTextThemeNamesFromJSON(SHARE_PATH "/textthemes.json");
+    themes.prepend("Default");
+    return themes;
+}
+
+TextTheme TextThemes::getTextTheme(QString name, QPalette defaultPalette)
+{
+    bool ok;
+    TextTheme theme = readTextThemeFromJSON(SHARE_PATH "/textthemes.json", name, &ok);
+    
+    if(! ok) {
+        theme.background = defaultPalette.color(QPalette::Base);
+        theme.foreground = defaultPalette.color(QPalette::Text);
+        theme.selectionForeground = defaultPalette.color(QPalette::HighlightedText);
+        theme.selectionBackground = defaultPalette.color(QPalette::Highlight);
+        theme.tabPosition.setBackground(QBrush(defaultPalette.color(QPalette::Disabled, QPalette::Highlight), Qt::Dense7Pattern));
+        theme.words.setForeground(QBrush(defaultPalette.color(QPalette::Inactive, QPalette::Highlight)));
+        theme.words.setFontWeight(QFont::Bold);
+        theme.comments.setForeground(QBrush(defaultPalette.color(QPalette::Disabled, QPalette::Highlight)));
+        theme.strings.setForeground(QBrush(defaultPalette.color(QPalette::Active, QPalette::Highlight)));
+        theme.spellCheck.setFontUnderline(true);
+        theme.spellCheck.setUnderlineColor(QColor("red"));
+        theme.spellCheck.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
+    }
+    
+    return theme;
+}
+
+QJsonDocument TextThemes::openJSON(const char *path)
+{
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning("Couldn't open text themes file.");
+    }
+    QByteArray jsonFile = file.readAll();
+    QJsonParseError jsonError;
+    QJsonDocument doc = QJsonDocument::fromJson(jsonFile, &jsonError);
+    if(jsonError.error != QJsonParseError::NoError) {
+        int line = 1, i = 0;
+        for(;i<jsonFile.length() && i<jsonError.offset;i++) {
+            if(jsonFile.at(i) == '\n')
+                line++;
+        }
+        qWarning() << "Json error in " << path
+            << line << ":" << (jsonError.offset-i) << jsonError.errorString();
+    }
+    return doc;
+}
+
+QStringList TextThemes::readTextThemeNamesFromJSON(const char *path)
+{
+    QStringList themeNames;
+    QJsonDocument json = openJSON(path);
+    
+    if(!json.isArray()) {
+        qWarning("Error in textthemes.json. No item array.");
+        return themeNames;
+    }
+    
+    QJsonArray arrayJson = json.array();
+    for(QJsonValue arrayItem : arrayJson) {
+        QJsonObject obj = arrayItem.toObject();
+        themeNames.append(obj.value("title").toString());
+    }
+    
+    return themeNames;
+}
+
+TextTheme TextThemes::readTextThemeFromJSON(const char *path, QString name, bool *ok)
+{
+    TextTheme theme;
+    *ok = false;
+    QJsonDocument json = openJSON(path);
+    
+    if(!json.isArray()) {
+        qWarning("Error in textthemes.json. No item array.");
+        return theme;
+    }
+    
+    
+    QJsonArray arrayJson = json.array();
+    for(QJsonValue arrayItem : arrayJson) {
+        QJsonObject obj = arrayItem.toObject();
+        if(name == obj.value("title").toString()) {
+            *ok = true;
+            theme.background = QColor(obj.value("background").toString());
+            theme.foreground = QColor(obj.value("foreground").toString());
+            theme.selectionForeground = QColor(obj.value("selectionForeground").toString());
+            theme.selectionBackground = QColor(obj.value("selectionBackground").toString());
+            theme.tabPosition.setBackground(QBrush(QColor(obj.value("tabPosition").toString()), Qt::Dense7Pattern));
+            theme.words.setForeground(QBrush(QColor(obj.value("words").toString())));
+            theme.words.setFontWeight(QFont::Bold);
+            theme.comments.setForeground(QBrush(QColor(obj.value("comments").toString())));
+            theme.strings.setForeground(QBrush(QColor(obj.value("strings").toString())));
+            theme.spellCheck.setFontUnderline(true);
+            theme.spellCheck.setUnderlineColor(QColor(obj.value("spellCheck").toString()));
+            theme.spellCheck.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
+            
+            return theme;
+        }
+    }
+    
     return theme;
 }

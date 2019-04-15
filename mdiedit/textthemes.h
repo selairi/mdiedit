@@ -43,6 +43,7 @@
 #include <QStringList>
 #include <QTextCharFormat>
 #include <QPalette>
+#include <QJsonDocument>
 
 struct TextTheme
 {
@@ -63,6 +64,10 @@ public:
     TextThemes();
     QStringList themeNames();
     TextTheme getTextTheme(QString name, QPalette defaultPalette);
+private:
+    QJsonDocument openJSON(const char *path);
+    QStringList readTextThemeNamesFromJSON(const char *path);
+    TextTheme readTextThemeFromJSON(const char *path, QString name, bool *ok);
 };
 
 #endif

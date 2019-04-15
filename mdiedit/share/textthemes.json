@@ -1,0 +1,74 @@
+[
+    {
+        "title"               : "DarkPastels",
+        "background"          : "#293134",
+        "foreground"          : "#E0E2E4",
+        "selectionForeground" : "#E0E2E4",
+        "selectionBackground" : "#A6A684",
+        "tabPosition"         : "#A6A684",
+        "words"               : "#93C763",
+        "comments"            : "#A6A684",
+        "strings"             : "#2AA198",
+        "spellCheck"          : "#D20019"
+    },
+    {
+        "title"               : "GreyOnBlack",
+        "background"          : "#000000",
+        "foreground"          : "#E0E2E4",
+        "selectionForeground" : "#E0E2E4",
+        "selectionBackground" : "#A6A684",
+        "tabPosition"         : "#A6A684",
+        "words"               : "#E0E2E4",
+        "comments"            : "#A6A684",
+        "strings"             : "#AAAAAA",
+        "spellCheck"          : "#E0E2E4"
+    },
+    {
+        "title"               : "Solarized",
+        "background"          : "#FDF6E3",
+        "foreground"          : "#657A81",
+        "selectionForeground" : "#596D73",
+        "selectionBackground" : "#ECE7D5",
+        "tabPosition"         : "#596D73",
+        "words"               : "#B58900",
+        "comments"            : "#586E75",
+        "strings"             : "#2AA198",
+        "spellCheck"          : "#D30102"
+    },
+    {
+        "title"               : "SolarizedDark",
+        "background"          : "#002B36",
+        "foreground"          : "#839496",
+        "selectionForeground" : "#93A1A1",
+        "selectionBackground" : "#073642",
+        "tabPosition"         : "#073642",
+        "words"               : "#B58900",
+        "comments"            : "#586E75",
+        "strings"             : "#2AA198",
+        "spellCheck"          : "#CB4B16"
+    },
+    {
+        "title"               : "Tango",
+        "background"          : "#FFFFFF",
+        "foreground"          : "#000000",
+        "selectionForeground" : "#000000",
+        "selectionBackground" : "#EEEEEE",
+        "tabPosition"         : "#EEEEEE",
+        "words"               : "#688046",
+        "comments"            : "#17608f",
+        "strings"             : "#92679a",
+        "spellCheck"          : "#808080"
+    },
+    {
+        "title"               : "Minimal",
+        "background"          : "#FFFFFF",
+        "foreground"          : "#000000",
+        "selectionForeground" : "#000000",
+        "selectionBackground" : "#EEEEEE",
+        "tabPosition"         : "#EEEEEE",
+        "words"               : "#5c8198",
+        "comments"            : "#334466",
+        "strings"             : "#333333",
+        "spellCheck"          : "##AAAAFF"
+    }
+]

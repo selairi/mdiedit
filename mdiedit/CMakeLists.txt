@@ -45,6 +45,10 @@ set(SYNTAX_FILES
     syntax/syntax.json
 )
 
+set(SHARE_FILES
+    share/textthemes.json
+)
+
 
 # Config file
 configure_file ( config.in config.h )
@@ -142,6 +146,7 @@ install(FILES ${DESKTOP_FILES} DESTINATION share/applications)
 install(FILES ${APP_ICON_FILES} DESTINATION share/icons/hicolor/scalable/apps)
 install(FILES ${TRANSLATIONS_FILES} DESTINATION share/mdiedit/translations-qm)
 install(FILES ${SYNTAX_FILES} DESTINATION share/mdiedit/syntax)
+install(FILES ${SHARE_FILES} DESTINATION share/mdiedit)
 
 # building tarball with CPack -------------------------------------------------
 include (InstallRequiredSystemLibraries)
