@@ -40,7 +40,7 @@
 
 GlobalConfig::GlobalConfig(QObject *parent):QObject(parent)
 {
-    snippesActivateOk = replaceTabsBySpacesOk = false;
+    snippesActivateOk = replaceTabsBySpacesOk = trailingSpacesWhenSaveOk = false;
     syntaxHighlightOk = highlightParenthesisMatchOk = true;
     autoindent = true;
     tabsSpacesSize = 4;
@@ -91,4 +91,10 @@ void GlobalConfig::setTextTheme(QString textTheme)
     if(textTheme.isEmpty())
         textTheme = "Default";
     this->textTheme = textTheme;
+}
+
+
+void GlobalConfig::setTrailingSpacesWhenSave(bool activatedOk)
+{
+    trailingSpacesWhenSaveOk = activatedOk;
 }

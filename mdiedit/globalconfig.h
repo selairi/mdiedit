@@ -60,6 +60,8 @@ public:
     void setSyntaxHighlight(bool activatedOk);
     inline bool isHighlightParenthesisMatch() {return highlightParenthesisMatchOk;};
     void setHighlightParenthesisMatch(bool activatedOk);
+    inline bool isTrailingSpacesWhenSave() {return trailingSpacesWhenSaveOk;};
+    void setTrailingSpacesWhenSave(bool activatedOk);
     SpellCheck *getSpellCheck();
     void setSpellCheck(SpellCheck *spellChecker);
     QString getEncoding();
@@ -73,6 +75,7 @@ signals:
 private:
     bool syntaxHighlightOk;
     bool highlightParenthesisMatchOk;
+    bool trailingSpacesWhenSaveOk;
     SpellCheck *spellChecker;
     QString encoding;
     QString textTheme;

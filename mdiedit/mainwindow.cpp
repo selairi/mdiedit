@@ -817,6 +817,10 @@ void MainWindow::createActions()
     wordwrapAct->setCheckable(true);
     connect(wordwrapAct, SIGNAL(triggered()), this, SLOT(wordwrapMode()));
     
+    trailingSpacesAct = new QAction( tr("Remove end of line spaces when saving"), this);
+    trailingSpacesAct->setCheckable(true);
+    connect(trailingSpacesAct, SIGNAL(triggered()), this, SLOT(trailindSpacesWhenSave()));
+    
     fontAct = new QAction( tr("&Font"), this);
     connect(fontAct, SIGNAL(triggered()), this, SLOT(showFontDialog()));
 
@@ -946,6 +950,7 @@ void MainWindow::createMenus()
     editMenu->addAction(goToLineAct);
     editMenu->addSeparator();
     editMenu->addAction(wordwrapAct);
+    editMenu->addAction(trailingSpacesAct);
     editMenu->addAction(fontAct);
     tabsMenu = editMenu->addMenu(tr("Tabs"));
     tabsMenu->addAction(replaceTabsBySpacesAct);
@@ -1038,6 +1043,8 @@ void MainWindow::readSettings()
     settings.beginGroup("format");
     wordwrapAct->setChecked(settings.value("wordwrap", true).toBool());
     wordwrapMode();
+    trailingSpacesAct->setChecked(settings.value("trailingSpaces", false).toBool());
+    trailindSpacesWhenSave();
     font.fromString(settings.value("font").toString());
     setFont();
     settings.endGroup();
@@ -1075,6 +1082,7 @@ void MainWindow::writeSettings()
     settings.setValue("windowState", saveState());
     settings.beginGroup("format");
     settings.setValue("wordwrap", wordwrapAct->isChecked());
+    settings.setValue("trailingSpaces", trailingSpacesAct->isChecked());
     settings.setValue("font", font.toString());
     settings.endGroup();
     settings.setValue("replaceTabsBySpacesOk", globalConfig->replaceTabsBySpacesOk);
@@ -1270,4 +1278,9 @@ void MainWindow::setTextTheme(QString themeName)
         mdiChild->updateTextTheme();
         mdiChild->getSyntaxHightlighter()->rehighlight();
     }
+}
+
+void MainWindow::trailindSpacesWhenSave()
+{
+    globalConfig->setTrailingSpacesWhenSave(trailingSpacesAct->isChecked());
 }

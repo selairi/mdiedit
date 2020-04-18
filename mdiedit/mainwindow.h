@@ -72,14 +72,14 @@ public:
     
     void setSpellChecker(SpellCheck *spellChecker);
 
-public slots:
+public Q_SLOTS:
     void open(QString fileName);
 
 protected:
     void closeEvent(QCloseEvent *event);
     void showEvent(QShowEvent *event);
 
-private slots:
+private Q_SLOTS:
     void newFile();
     void open();
     void save();
@@ -98,6 +98,7 @@ private slots:
     void showFindDialog();
     void goToLine();
     void wordwrapMode(MdiChild *child = NULL);
+    void trailindSpacesWhenSave();
     void showFontDialog();
     void showSnippesDialog();
     void replaceTabsBySpaces();
@@ -176,6 +177,7 @@ private:
     QAction *findNextAct;
     QAction *goToLineAct;
     QAction *wordwrapAct;
+    QAction *trailingSpacesAct;
     QAction *fontAct;
     QAction *snippesAct;
     QAction *replaceTabsBySpacesAct;

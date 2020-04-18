@@ -46,6 +46,7 @@
 #endif
 
 #include <QPalette>
+#include <QRegularExpression>
 
 #include "mdichild.h"
 #include "textblockdata.h"
@@ -296,7 +297,10 @@ bool MdiChild::saveFile(const QString &fileName)
     QTextStream out(&file);
     out.setCodec(globalConfig->getEncoding().toLatin1().constData());
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    out << toPlainText();
+    QString text = toPlainText();
+    if(globalConfig->isTrailingSpacesWhenSave())
+        text = removeTrailingSpaces(text);
+    out << text;
     QApplication::restoreOverrideCursor();
 
     setCurrentFile(fileName);
@@ -618,6 +622,21 @@ void MdiChild::updateTextTheme()
     setPalette(pPalette);
     syntaxHightlighter->updateTextTheme(&theme);
     
+}
+
+QString MdiChild::removeTrailingSpaces(QString text)
+{
+    QString buffer;
+    QRegularExpression re("[ \\t\\n]+$");
+    bool firstLine = true;
+    for(QString line : text.split("\n")) {
+        if(!firstLine) {
+            buffer.append("\n");
+        } else
+            firstLine = false;
+        buffer.append(line.remove(re));
+    }
+    return buffer;
 }
 
 PlainTextDocumentLayout::PlainTextDocumentLayout(QTextDocument *parent):QPlainTextDocumentLayout(parent)

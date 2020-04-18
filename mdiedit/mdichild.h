@@ -100,6 +100,8 @@ private slots:
 private:
     bool maybeSave();
     QString strippedName(const QString &fullFileName);
+    QString removeTrailingSpaces(QString text);
+    
     bool isUntitled;
     bool autoindent;
     Document *_document;
