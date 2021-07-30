@@ -49,7 +49,7 @@ FindDialog::FindDialog(QWidget * parent):QDialog(parent)
 
 QTextDocument::FindFlags FindDialog::findFlags() 
 {
-	QTextDocument::FindFlags flags = 0;
+	QTextDocument::FindFlags flags;
 	if(ui.sensitiveCheckBox->isChecked())
 		flags |= QTextDocument::FindCaseSensitively;
 	if(ui.backwardsCheckBox->isChecked())

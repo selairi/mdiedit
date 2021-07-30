@@ -124,13 +124,10 @@ QTreeWidgetItem* DocumentList::findTreeNode(QString path, MdiChild *mdichild)
 
 QTreeWidgetItem* DocumentList::findTreeNode(MdiChild *mdichild)
 {
-    QList<QTreeWidgetItem *> items = treeWidget->findItems("*", Qt::MatchWildcard, 1);
+    QList<QTreeWidgetItem *> items = treeWidget->findItems("*", Qt::MatchWildcard | Qt::MatchRecursive, 0);
     for(QTreeWidgetItem *item : items) {
-        for(int i = 0; i < item->childCount(); i++) {
-            QTreeWidgetItem *child = item->child(i);
-            if(mdichild == child->data(2, Qt::DisplayRole).value<MdiChild*>())
-                return child;
-        }
+        if(mdichild == item->data(2, Qt::DisplayRole).value<MdiChild*>())
+            return item;
     }
     return nullptr;
 }

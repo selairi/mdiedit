@@ -48,6 +48,8 @@
 #include <QInputDialog> 
 #include <QFileInfo>
 
+#include <algorithm>
+
 #include "mainwindow.h"
 #include "mdichild.h"
 #include "snippesdialog.h"
@@ -313,7 +315,7 @@ void MainWindow::completion()
         for (int i = 0; i < windows.size(); ++i) {
             MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
             QString str = child->toPlainText();
-            completerWordList = completerWordList + str.split(QRegExp("\\W"), QString::SkipEmptyParts);
+            completerWordList = completerWordList + str.split(QRegExp("\\W"), Qt::SkipEmptyParts);
         }
                 
         completerWordList.removeDuplicates();
@@ -405,11 +407,13 @@ void MainWindow::setFont(MdiChild *child)
         for (int i = 0; i < windows.size(); ++i) {
             MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
             child->setFont(font);
+            child->updateTabsSize();
         }
     }
     else {
         if(child)
             child->setFont(font);
+            child->updateTabsSize();
     }
 }
 
@@ -1250,7 +1254,7 @@ void MainWindow::selectEncoding()
     QStringList codecs;
     
     QList<QByteArray> availableCodecs = QTextCodec::availableCodecs();
-    qSort(availableCodecs);
+    std::sort<QList<QByteArray>::iterator>(availableCodecs.begin(), availableCodecs.end());
     int selected = -1;
     for(QByteArray codec : availableCodecs) {
         QString codecStr(codec);
