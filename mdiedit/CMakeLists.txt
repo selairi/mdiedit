@@ -1,14 +1,19 @@
-cmake_minimum_required( VERSION 2.6 )
+cmake_minimum_required( VERSION 3.16.0 )
 project(mdiedit)
 
+include(CTest)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 set(H_FILES
-	document.h  finddialog.h  mainwindow.h  mdichild.h snippesdialog.h textblockdata.h completiondialog.h 
+	document.h  finddialog.h  mainwindow.h  mdichild.h snippesdialog.h textblockdata.h completiondialog.h
 	syntaxhighlighter.h globalconfig.h filebrowser.h documentlist.h ctagsbrowser.h spellchecktools.h
 	textthemes.h
 )
 
 set(MOC_FILES
-	document.h  finddialog.h  mainwindow.h  mdichild.h snippesdialog.h textblockdata.h completiondialog.h 
+	document.h  finddialog.h  mainwindow.h  mdichild.h snippesdialog.h textblockdata.h completiondialog.h
 	syntaxhighlighter.h globalconfig.h filebrowser.h documentlist.h ctagsbrowser.h spellchecktools.h
 	textthemes.h
 )
@@ -53,22 +58,26 @@ set(SHARE_FILES
 # Config file
 configure_file ( config.in config.h )
 
-cmake_minimum_required( VERSION 2.6 )
+# option(USE_QT6 "Force use the Qt6." $ENV{USE_QT6})
+# option(USE_QT5 "Force use the Qt5." $ENV{USE_QT5})
 
-option(USE_QT5 "Force use the Qt5." $ENV{USE_QT5})
-option(USE_QT4 "Force use the Qt4." $ENV{USE_QT4})
+# Qt5 suppport is disabled
+set(USE_QT5 OFF)
+set(USE_QT6 ON)
 
-if((USE_QT4 AND USE_QT5) OR
-   (NOT USE_QT4 AND NOT USE_QT5))
+if((USE_QT6 AND USE_QT5) OR
+   (NOT USE_QT6 AND NOT USE_QT5))
 
     # Autodetect Qt version
-    find_package(Qt4 QUIET)
-    if (QT4_FOUND)
-        set(USE_QT4 ON)
+    find_package(Qt6 QUIET)
+    if (Qt6_FOUND)
+        message(STATUS "Qt6 found")
         set(USE_QT5 OFF)
+        set(USE_QT6 ON)
     else()
-        set(USE_QT4 OFF)
+        message(STATUS "Qt5 found")
         set(USE_QT5 ON)
+        set(USE_QT6 OFF)
     endif()
 endif()
 
@@ -82,13 +91,13 @@ if(USE_QT5)
 
     set(QTX_LIBRARIES ${Qt5Widgets_LIBRARIES} ${Qt5X11Extras_LIBRARIES})
 else()
-    find_package(Qt4 REQUIRED QtCore QtGui QUIET)
+    find_package(Qt6 COMPONENTS Widgets Gui REQUIRED QUIET)
 
-    qt4_wrap_cpp(MOC_SOURCES ${MOC_FILES})
-    qt4_wrap_ui(UI_HEADERS ${UI_FILES})
-    qt4_add_resources(QRC_SOURCES ${QRC_FILES})
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTORCC ON)
+    set(CMAKE_AUTOUIC ON)
 
-    set(QTX_LIBRARIES ${QT_LIBRARIES})
+    set(QTX_LIBRARIES Qt6::Widgets Qt6::Gui)
 endif()
 
 FIND_PATH(HUNSPELL_INCLUDE_DIR hunspell/hunspell.h
@@ -125,20 +134,30 @@ set(APP_SHARE_DIR share/lxqt/${PROJECT_NAME})
 #)
 #************************************************
 
-
-add_executable(${PROJECT_NAME}
-    ${CPP_FILES}
-    ${UI_FILES}
-    ${RESOURCES}
-    ${QRC_SOURCES}
-    ${QM_FILES}
-    ${MOC_SOURCES}
-)
+if(USE_QT5)
+    add_executable(${PROJECT_NAME}
+        ${CPP_FILES}
+        ${UI_FILES}
+        ${RESOURCES}
+        ${QRC_SOURCES}
+        ${QM_FILES}
+        ${MOC_SOURCES}
+    )
+else()
+    add_executable(${PROJECT_NAME}
+        ${CPP_FILES}
+        ${UI_FILES}
+        ${RESOURCES}
+        ${QRC_FILES}
+        ${QM_FILES}
+        ${MOC_FILES}
+    )
+endif()
 #add_dependencies(${PROJECT_NAME} ${LXQT_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${QTX_LIBRARIES} ${HUNSPELL_LIBRARIES} ${LXQT_LIBRARIES})
-if(USE_QT4)
-target_link_libraries(${PROJECT_NAME} Qt4::QtGui Qt4::QtXml)
-endif()
+#if(USE_QT4)
+#target_link_libraries(${PROJECT_NAME} Qt4::QtGui Qt4::QtXml)
+#endif()
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 install(FILES ${CONFIG_FILES} DESTINATION ${APP_SHARE_DIR})

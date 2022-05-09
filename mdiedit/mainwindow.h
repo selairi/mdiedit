@@ -100,6 +100,8 @@ private Q_SLOTS:
     void wordwrapMode(MdiChild *child = NULL);
     void trailindSpacesWhenSave();
     void showFontDialog();
+    void fontIncrease();
+    void fontDecrease();
     void showSnippesDialog();
     void replaceTabsBySpaces();
     void syntaxHighlight();
@@ -111,6 +113,7 @@ private Q_SLOTS:
     MdiChild *createMdiChild();
     void switchLayoutDirection();
     void setActiveSubWindow(QWidget *window);
+    void setActiveSubWindow(QObject *window);
     void showLineNumber();
     void showLineNumber(MdiChild *mdichild);
     void updateMdiChild(QMdiSubWindow * child);
@@ -179,6 +182,7 @@ private:
     QAction *wordwrapAct;
     QAction *trailingSpacesAct;
     QAction *fontAct;
+    QAction *fontIncreaseAct, *fontDecreaseAct;
     QAction *snippesAct;
     QAction *replaceTabsBySpacesAct;
     QAction *syntaxHighlightAct;

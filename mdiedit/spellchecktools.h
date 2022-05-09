@@ -39,8 +39,8 @@
 #ifndef SPELLCHECK_H
 #define SPELLCHECK_H
 #include <hunspell/hunspell.hxx>
+#include <QStringEncoder> 
 #include <QObject>
-#include <QTextCodec>
 
 class SpellCheck : public QObject
 {
@@ -66,7 +66,7 @@ private:
     Hunspell *spellChecker;
     QStringList langs;
     QString lang;
-    QTextCodec *codec;
+    QStringEncoder *codec;
 };
 
 #endif

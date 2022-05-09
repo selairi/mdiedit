@@ -60,8 +60,8 @@
 MainWindow::MainWindow()
 {
     globalConfig = new GlobalConfig(this);
-    lineNumberLabel = NULL;
-    popupMenu = NULL;
+    lineNumberLabel = nullptr;
+    popupMenu = nullptr;
     mdiArea = new QMdiArea(this);
     mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -71,8 +71,8 @@ MainWindow::MainWindow()
     connect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow*)),
             this, SLOT(updateMenus()));
     windowMapper = new QSignalMapper(this);
-    connect(windowMapper, SIGNAL(mapped(QWidget*)),
-            this, SLOT(setActiveSubWindow(QWidget*)));
+    connect(windowMapper, SIGNAL(mappedObject(QObject*)),
+            this, SLOT(setActiveSubWindow(QObject*)));
     actionsMapper = new QSignalMapper(this);
     tabsGroupAct = new QActionGroup(this);
     syntaxGroupAct = new QActionGroup(this);
@@ -81,7 +81,7 @@ MainWindow::MainWindow()
     spellCheckDictsActGroup = new QActionGroup(this);
     spellCheckMapper = new QSignalMapper(this);
     
-    fileBrowserWidget = NULL;
+    fileBrowserWidget = nullptr;
 
     createActions();
     createMenus();
@@ -93,9 +93,8 @@ MainWindow::MainWindow()
     readSettings();
 
     setWindowTitle(tr("MDI Edit"));
-    setUnifiedTitleAndToolBarOnMac(true);
     
-    findDialog = NULL;
+    findDialog = nullptr;
 }
 
 MainWindow::~MainWindow()
@@ -105,7 +104,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::showFileBrowser()
 {
-    if(fileBrowserWidget == NULL) {
+    if(fileBrowserWidget == nullptr) {
         //showFileBrowser(true);
         fileBrowserDockWidget->show();
     }
@@ -115,7 +114,7 @@ void MainWindow::showFileBrowser()
 
 void MainWindow::showFileBrowser(bool visibility)
 {
-    if(visibility && fileBrowserWidget == NULL) {
+    if(visibility && fileBrowserWidget == nullptr) {
         fileBrowserWidget = new FileBrowser(this);
         fileBrowserDockWidget->setWidget(fileBrowserWidget);
         fileBrowserWidget->show();
@@ -123,10 +122,10 @@ void MainWindow::showFileBrowser(bool visibility)
         if(!fileBrowserPath.isEmpty())
             fileBrowserWidget->setPath(fileBrowserPath);
     }
-    else if(!visibility && fileBrowserWidget != NULL) {
+    else if(!visibility && fileBrowserWidget != nullptr) {
         fileBrowserPath = fileBrowserWidget->getPath();
         delete fileBrowserWidget;
-        fileBrowserWidget = NULL;
+        fileBrowserWidget = nullptr;
         fileBrowserDockWidget->setWidget(fileBrowserWidget);
     }
 }
@@ -180,17 +179,17 @@ void MainWindow::updateMdiChild(QMdiSubWindow *) {
                 if(syntaxsAct.contains(syntax->title)) {
                     QAction *action = syntaxsAct[syntax->title];
                     if(action->text() == syntax->title) {
-                        disconnect(actionsMapper, SIGNAL(mapped(QString)), this, SLOT(setSyntax(QString)));
+                        disconnect(actionsMapper, SIGNAL(mappedString(QString)), this, SLOT(setSyntax(QString)));
                         action->setChecked(true);
-                        connect(actionsMapper, SIGNAL(mapped(QString)), this, SLOT(setSyntax(QString)));
+                        connect(actionsMapper, SIGNAL(mappedString(QString)), this, SLOT(setSyntax(QString)));
                         syntaxFoundOk = true;
                     }
                 }
             }
             if(!syntaxFoundOk) {
-                disconnect(actionsMapper, SIGNAL(mapped(QString)), this, SLOT(setSyntax(QString)));
+                disconnect(actionsMapper, SIGNAL(mappedString(QString)), this, SLOT(setSyntax(QString)));
                 syntaxsAct["None"]->setChecked(true);
-                connect(actionsMapper, SIGNAL(mapped(QString)), this, SLOT(setSyntax(QString)));
+                connect(actionsMapper, SIGNAL(mappedString(QString)), this, SLOT(setSyntax(QString)));
             }
         }
     }
@@ -315,7 +314,7 @@ void MainWindow::completion()
         for (int i = 0; i < windows.size(); ++i) {
             MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
             QString str = child->toPlainText();
-            completerWordList = completerWordList + str.split(QRegExp("\\W"), Qt::SkipEmptyParts);
+            completerWordList = completerWordList + str.split(QRegularExpression("\\W"), Qt::SkipEmptyParts);
         }
                 
         completerWordList.removeDuplicates();
@@ -325,7 +324,7 @@ void MainWindow::completion()
         QTextCursor cursorOriginal = activeChild->textCursor();
         cursor.movePosition(QTextCursor::PreviousCharacter, QTextCursor::KeepAnchor);
         QString text = cursor.selectedText();
-        if(QRegExp("\\w").exactMatch(text)) {
+        if( QRegularExpression("\\w").match(text).hasMatch() ) {
             cursor = activeChild->textCursor();
             cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
             text = cursor.selectedText();
@@ -367,7 +366,7 @@ bool MainWindow::findNext()
         bool ok;
         if(regExpOk) {
              QTextCursor cursor = activeMdiChild()->textCursor();
-             QTextCursor cursorAux = activeMdiChild()->document()->find(QRegExp(str), cursor, flags);
+             QTextCursor cursorAux = activeMdiChild()->document()->find(QRegularExpression(str), cursor, flags);
              ok = !cursorAux.isNull();
              if(ok)
                  activeMdiChild()->setTextCursor(cursorAux);
@@ -390,7 +389,7 @@ bool MainWindow::findNext()
 void MainWindow::showFindDialog()
 {
     if (activeMdiChild()) {
-        if(findDialog == NULL) {
+        if(findDialog == nullptr) {
             findDialog = new FindDialog(this);
             connect(findDialog, SIGNAL(find()), this, SLOT(findNext()));
             connect(findDialog, SIGNAL(replace()), this, SLOT(replace()));
@@ -402,7 +401,7 @@ void MainWindow::showFindDialog()
 
 void MainWindow::setFont(MdiChild *child)
 {
-    if(child==NULL) {
+    if(child == nullptr) {
         QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
         for (int i = 0; i < windows.size(); ++i) {
             MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
@@ -425,6 +424,18 @@ void MainWindow::showFontDialog()
         font = selectedFont;
         setFont();
     }
+}
+
+void MainWindow::fontIncrease()
+{
+    font.setPointSize(font.pointSize() + 1);
+    setFont();
+}
+
+void MainWindow::fontDecrease()
+{
+    font.setPointSize(font.pointSize() - 1);
+    setFont();
 }
 
 void MainWindow::showSnippesDialog()
@@ -472,7 +483,7 @@ void MainWindow::replaceAll()
        cursor.movePosition(QTextCursor::Start);
        cursor.beginEditBlock();
         if(regExpOk)
-                    cursor = activeMdiChild()->document()->find(QRegExp(str), cursor, flags);
+                    cursor = activeMdiChild()->document()->find(QRegularExpression(str), cursor, flags);
                 else
                     cursor = activeMdiChild()->document()->find(str, cursor, flags);
         ok = !cursor.isNull();
@@ -480,7 +491,7 @@ void MainWindow::replaceAll()
                 cursor.insertText(replace_str);
                 QTextCursor cursorAux;
                 if(regExpOk)
-                    cursorAux = activeMdiChild()->document()->find(QRegExp(str), cursor, flags);
+                    cursorAux = activeMdiChild()->document()->find(QRegularExpression(str), cursor, flags);
                 else
                     cursorAux = activeMdiChild()->document()->find(str, cursor, flags);
                 ok = !cursorAux.isNull();
@@ -509,7 +520,7 @@ void MainWindow::goToLine()
 
 void MainWindow::wordwrapMode(MdiChild *child)
 {
-    if(child==NULL) {
+    if(child == nullptr) {
         QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
         for (int i = 0; i < windows.size(); ++i) {
             MdiChild *child = qobject_cast<MdiChild *>(windows.at(i)->widget());
@@ -729,7 +740,7 @@ void MainWindow::createActions()
 
     blockModeAct = new QAction( tr("&Block mode"), this);
     QList<QKeySequence> keysBlockModeAct;
-    keysBlockModeAct << QKeySequence(Qt::CTRL+Qt::Key_B);
+    keysBlockModeAct << QKeySequence(Qt::CTRL | Qt::Key_B);
     blockModeAct->setShortcuts(keysBlockModeAct);
     connect(blockModeAct, SIGNAL(triggered()), this, SLOT(blockMode()));
         
@@ -745,7 +756,7 @@ void MainWindow::createActions()
     
     goToLineAct = new QAction(tr("&Go to line"), this);
     QList<QKeySequence> keysGoToLineAct;
-    keysGoToLineAct << QKeySequence(Qt::CTRL+Qt::Key_G);
+    keysGoToLineAct << QKeySequence(Qt::CTRL | Qt::Key_G);
     goToLineAct->setShortcuts(keysGoToLineAct);
     connect(goToLineAct, SIGNAL(triggered()), this, SLOT(goToLine()));
     
@@ -772,7 +783,7 @@ void MainWindow::createActions()
         connect(tabsSpacesAct[i], SIGNAL(changed()), actionsMapper, SLOT(map()));
         actionsMapper->setMapping(tabsSpacesAct[i], spaces);
     }
-    connect(actionsMapper, SIGNAL(mapped(int)), this, SLOT(setTabsSize(int)));
+    connect(actionsMapper, SIGNAL(mappedInt(int)), this, SLOT(setTabsSize(int)));
     
     // Lists available encodings
     
@@ -799,7 +810,7 @@ void MainWindow::createActions()
             connect(action, SIGNAL(changed()), actionsMapper, SLOT(map()));
             actionsMapper->setMapping(action, syntaxName);
         }
-        connect(actionsMapper, SIGNAL(mapped(QString)), this, SLOT(setSyntax(QString)));
+        connect(actionsMapper, SIGNAL(mappedString(QString)), this, SLOT(setSyntax(QString)));
     }
     
     {
@@ -814,7 +825,7 @@ void MainWindow::createActions()
             connect(action, SIGNAL(changed()), textThemesMapper, SLOT(map()));
             textThemesMapper->setMapping(action, themeName);
         }
-        connect(textThemesMapper, SIGNAL(mapped(QString)), this, SLOT(setTextTheme(QString)));
+        connect(textThemesMapper, SIGNAL(mappedString(QString)), this, SLOT(setTextTheme(QString)));
     }
     
     wordwrapAct = new QAction( tr("&Wordwrap"), this);
@@ -828,6 +839,18 @@ void MainWindow::createActions()
     fontAct = new QAction( tr("&Font"), this);
     connect(fontAct, SIGNAL(triggered()), this, SLOT(showFontDialog()));
 
+    fontIncreaseAct = new QAction( tr("Zoom +"), this);
+    QList<QKeySequence> keysFontIncreaseAct;
+    keysFontIncreaseAct << QKeySequence(Qt::CTRL | Qt::Key_Plus);
+    fontIncreaseAct->setShortcuts(keysFontIncreaseAct);
+    connect(fontIncreaseAct, SIGNAL(triggered()), this, SLOT(fontIncrease()));
+ 
+    fontDecreaseAct = new QAction( tr("Zoom -"), this);
+    QList<QKeySequence> keysFontDecreaseAct;
+    keysFontDecreaseAct << QKeySequence(Qt::CTRL | Qt::Key_Minus);
+    fontDecreaseAct->setShortcuts(keysFontDecreaseAct);
+    connect(fontDecreaseAct, SIGNAL(triggered()), this, SLOT(fontDecrease()));
+ 
     pasteAct = new QAction(QIcon::fromTheme("edit-paste"), tr("&Paste"), this);
     pasteAct->setShortcuts(QKeySequence::Paste);
     pasteAct->setStatusTip(tr("Paste the clipboard's contents into the current "
@@ -841,7 +864,7 @@ void MainWindow::createActions()
     completionAct = new QAction( tr("Completer"), this);
     QList<QKeySequence> keysCompletionAct;
     keysCompletionAct << QKeySequence(Qt::Key_F2);
-    keysCompletionAct << QKeySequence(Qt::CTRL+Qt::Key_Space);
+    keysCompletionAct << QKeySequence(Qt::CTRL | Qt::Key_Space);
     completionAct->setShortcuts(keysCompletionAct);
     connect(completionAct, SIGNAL(triggered()), this, SLOT(completion()));
     
@@ -862,7 +885,7 @@ void MainWindow::createActions()
     spellCheckDictsActGroup->addAction(spellDictNoneAct);
     connect(spellDictNoneAct, SIGNAL(changed()), spellCheckMapper, SLOT(map()));
     spellCheckMapper->setMapping(spellDictNoneAct, 0);
-    connect(spellCheckMapper, SIGNAL(mapped(int)), this, SLOT(setSpellDict(int)));
+    connect(spellCheckMapper, SIGNAL(mappedInt(int)), this, SLOT(setSpellDict(int)));
     spellCheckDictsAct.append(spellDictNoneAct);
 
     newViewAct = new QAction( tr("&New view"), this);
@@ -956,6 +979,8 @@ void MainWindow::createMenus()
     editMenu->addAction(wordwrapAct);
     editMenu->addAction(trailingSpacesAct);
     editMenu->addAction(fontAct);
+    editMenu->addAction(fontIncreaseAct);
+    editMenu->addAction(fontDecreaseAct);
     tabsMenu = editMenu->addMenu(tr("Tabs"));
     tabsMenu->addAction(replaceTabsBySpacesAct);
     for(int i=0; i<N_TABS_SPACES; i++) {
@@ -1037,7 +1062,7 @@ void MainWindow::readSettings()
     QSettings settings("QtProject", "MDI Edit");
     QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
     QSize size = settings.value("size", QSize(400, 400)).toSize();
-    move(pos);
+    //move(pos); // A core is generated if you move the window on Wayland 
     resize(size);
     if(settings.value("maximized", false).toBool())
         showMaximized();
@@ -1135,9 +1160,16 @@ void MainWindow::switchLayoutDirection()
 
 void MainWindow::setActiveSubWindow(QWidget *window)
 {
-    if (!window)
+    if(!window)
         return;
     mdiArea->setActiveSubWindow(qobject_cast<QMdiSubWindow *>(window));
+}
+
+void MainWindow::setActiveSubWindow(QObject *window)
+{
+    if(!window)
+        return;
+    setActiveSubWindow(qobject_cast<QWidget *>(window));
 }
 
 void MainWindow::replaceTabsBySpaces()
@@ -1179,7 +1211,7 @@ void MainWindow::showMessage(QString text)
 void MainWindow::showEvent(QShowEvent *event)
 {
     QMainWindow::showEvent(event);
-    if(popupMenu == NULL)
+    if(popupMenu == nullptr)
     {
         toolsMenu->addMenu(popupMenu = createPopupMenu());
         popupMenu->setTitle(tr("Show/Hide Tools"));
@@ -1252,19 +1284,18 @@ void MainWindow::setSpellDict(int i)
 void MainWindow::selectEncoding()
 {
     QStringList codecs;
+    int selected = 0;
     
-    QList<QByteArray> availableCodecs = QTextCodec::availableCodecs();
-    std::sort<QList<QByteArray>::iterator>(availableCodecs.begin(), availableCodecs.end());
-    int selected = -1;
-    for(QByteArray codec : availableCodecs) {
-        QString codecStr(codec);
-        if( ! codecs.contains(codecStr) )
-            codecs.append(QString(codecStr));
-        
-        if(selected < 1 && codecStr == globalConfig->getEncoding())
-            selected = codecs.size() - 1;
+    for(int e = 0; e <= QStringConverter::System; e++) {
+        const char *codecName = QStringConverter::nameForEncoding((QStringConverter::Encoding)e);
+        if(codecName != nullptr) {
+            QString codec =QString::fromLocal8Bit(codecName);
+            codecs << codec;
+            if(codec == globalConfig->getEncoding())
+                selected = e;
+        }
     }
-    
+   
     bool ok;
     QString str = QInputDialog::getItem(this, tr("Select encoding"), tr("Select encoding"), codecs, selected, false, &ok);
     

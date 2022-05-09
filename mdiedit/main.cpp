@@ -50,23 +50,28 @@ int main(int argn, char *argv[])
 	QApplication app(argn, argv);
 	
 	QTranslator qtTranslator;
-	qtTranslator.load(QString(TRANSLATIONS_PATH "/mdiedit-") + QLocale::system().name()+ QString(".qm"));
+	bool ok = qtTranslator.load(QString(TRANSLATIONS_PATH "/mdiedit-") + QLocale::system().name()+ QString(".qm"));
+  if(!ok)
+     qWarning() << "Error: Translation cannot be found."; 
 	app.installTranslator(&qtTranslator);
-	
+
 	// qt translation for default dialogs (QFileDialog) and so on
-     QTranslator qtTranslator2;
-	qtTranslator2.load("qt_" + QLocale::system().name(), QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+  QTranslator qtTranslator2;
+	ok = qtTranslator2.load("qt_" + QLocale::system().name(), QLibraryInfo::path(QLibraryInfo::TranslationsPath));
+  if(!ok)
+      qWarning() << "Error: no default translations located.";
 	app.installTranslator(&qtTranslator2);
 
-	qDebug() << QLibraryInfo::location(QLibraryInfo::TranslationsPath) << "  " << QLocale::system().name();
+	qDebug() << QLibraryInfo::path(QLibraryInfo::TranslationsPath) << "  " << QLocale::system().name();
 	
 	QStringList fileList;
 	for(int i=1;i<argn;i++) {
 		fileList << argv[i];
 	}
-	
+
 	MainWindow mainWin;
-	// Init spell check
+
+  // Init spell check
 	SpellCheck *spellChecker = new SpellCheck(&mainWin);
 	{
 	   char *lang = getenv("LANG");
@@ -75,6 +80,7 @@ int main(int argn, char *argv[])
 	       spellChecker->setEnable(true);
 	   }
 	}
+
 	mainWin.setSpellChecker(spellChecker);
 	mainWin.setWindowIcon(QIcon(ICON_PATH "/hicolor/scalable/apps/mdiedit.svg"));
 	mainWin.show();

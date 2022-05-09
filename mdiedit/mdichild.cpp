@@ -84,7 +84,7 @@ MdiChild::MdiChild(GlobalConfig *globalConfig, QWidget *parent):QPlainTextEdit(p
 
 void MdiChild::keyPressEvent(QKeyEvent * e)
 {
-    static QRegExp regExp("[^ \t]");
+    static QRegularExpression regExp("[^ \t]");
     if(autoindent) {
         if(e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) {
             QTextCursor cursor = textCursor();
@@ -156,8 +156,8 @@ void MdiChild::keyPressEvent(QKeyEvent * e)
         	cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
         	QString text = cursor.selectedText();
         	text.replace(QChar(QChar::ParagraphSeparator), "\n");
-        	text.replace(QRegExp("^[ \t]"), "");
-        	text.replace(QRegExp("\n[ \t]"), "\n");
+        	text.replace(QRegularExpression("^[ \t]"), "");
+        	text.replace(QRegularExpression("\n[ \t]"), "\n");
         	start = cursor.selectionStart() ;
         	cursor.insertText(text);
         	cursor.setPosition(start, QTextCursor::KeepAnchor);
@@ -195,14 +195,14 @@ void MdiChild::insertSpacesAsTab(QTextCursor &cursor)
 
 void MdiChild::removeSpacesAsTab(QTextCursor &cursor)
 {
-    QRegExp regex(" +");
+    QRegularExpression regex(" +");
     int spaces = cursor.columnNumber() % globalConfig->tabsSpacesSize;
     if( spaces == 0 )
         spaces = globalConfig->tabsSpacesSize;    
     if( cursor.columnNumber() < globalConfig->tabsSpacesSize )
         spaces = cursor.columnNumber();
     cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor, spaces);
-    if( regex.exactMatch(cursor.selectedText()) ) {
+    if( regex.match(cursor.selectedText()).hasMatch() ) {
         cursor.removeSelectedText();
         setTextCursor(cursor);
     }
@@ -254,7 +254,11 @@ bool MdiChild::loadFile(const QString &fileName)
 
     blockMode(false);
     QTextStream in(&file);
-    in.setCodec(globalConfig->getEncoding().toLatin1().constData());
+    std::optional<QStringConverter::Encoding> encoding = QStringConverter::encodingForName(globalConfig->getEncoding().toLocal8Bit().constData());
+    if(encoding)
+        in.setEncoding(*encoding);
+    else
+        qWarning() << "Encoding" << globalConfig->getEncoding() << "not found. Using Uft-8 as default.";
     QApplication::setOverrideCursor(Qt::WaitCursor);
     setPlainText(in.readAll());
     QApplication::restoreOverrideCursor();
@@ -295,7 +299,11 @@ bool MdiChild::saveFile(const QString &fileName)
     }
 
     QTextStream out(&file);
-    out.setCodec(globalConfig->getEncoding().toLatin1().constData());
+    std::optional<QStringConverter::Encoding> encoding = QStringConverter::encodingForName(globalConfig->getEncoding().toLocal8Bit().constData());
+    if(encoding)
+        out.setEncoding(*encoding);
+    else
+        qWarning() << "Encoding" << globalConfig->getEncoding() << "not found. Using Uft-8 as default.";
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QString text = toPlainText();
     if(globalConfig->isTrailingSpacesWhenSave())
@@ -406,8 +414,8 @@ bool MdiChild::maybeSave()
                      tr("'%1' has been modified.\n"
                         "Do you want to save your changes?")
                      .arg(userFriendlyCurrentFile()),
-                     QMessageBox::Save | QMessageBox::Discard
-            	     | QMessageBox::Cancel);
+                     QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
+                   QMessageBox::Cancel);
         if (ret == QMessageBox::Save)
             return save();
         else if (ret == QMessageBox::Cancel)

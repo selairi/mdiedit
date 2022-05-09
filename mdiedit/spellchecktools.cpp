@@ -67,6 +67,8 @@ SpellCheck::~SpellCheck()
 {
     if(spellChecker != nullptr)
         delete spellChecker;
+    if(codec != nullptr)
+      delete codec;
 }
 
 bool SpellCheck::spell(const QString word)
@@ -75,7 +77,7 @@ bool SpellCheck::spell(const QString word)
         return true;
     QByteArray w;
     if(codec != nullptr)
-        w = codec->fromUnicode(word);
+        w = codec->encode(word);
     else
         w = word.toLocal8Bit();
     return spellChecker->spell(w.toStdString());
@@ -90,7 +92,7 @@ void SpellCheck::setEnable(bool enable)
 {
     if(enable && spellChecker == nullptr) {
         spellChecker = new Hunspell(QString("/usr/share/hunspell/"+lang+".aff").toLocal8Bit().data(), QString("/usr/share/hunspell/"+lang+".dic").toLocal8Bit().data());
-        codec = QTextCodec::codecForName(spellChecker->get_dict_encoding().c_str());
+        codec = new QStringEncoder(spellChecker->get_dict_encoding().c_str());
     } else {
         if(spellChecker != nullptr) {
             delete spellChecker;

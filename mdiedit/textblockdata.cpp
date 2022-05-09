@@ -41,3 +41,9 @@
 TextBlockData::TextBlockData():QTextBlockUserData()
 {
 }
+
+
+Parenthesis::Parenthesis()
+{
+    pos = -1;
+}

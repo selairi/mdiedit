@@ -53,6 +53,8 @@ public:
 struct Parenthesis {
     QChar parenthesis;
     int pos;
+
+    Parenthesis();
 };
 
 #endif
